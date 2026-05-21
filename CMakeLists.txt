@@ -10,8 +10,6 @@ option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
 add_library(pointmapper SHARED lib/library.cpp
         lib/DepthDevice.h
         lib/common.h
-        lib/realsense/RealsenseFrame.cpp
-        lib/realsense/RealsenseFrame.h
         lib/common.cpp)
 
 if (REALSENSE_SUPPORT)
@@ -20,6 +18,8 @@ if (REALSENSE_SUPPORT)
     target_link_libraries(pointmapper realsense2::realsense2)
     target_sources(pointmapper
             PRIVATE
+            lib/realsense/RealsenseFrame.cpp
+            lib/realsense/RealsenseFrame.h
             lib/realsense/RealsenseDevice.cpp
             lib/realsense/RealsenseDevice.h)
 endif()

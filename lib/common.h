@@ -2,6 +2,7 @@
 // Created by Kyle Smith on 2026-05-21.
 //
 #pragma once
+#include <cstdint>
 
 
 struct CameraParams {
@@ -12,7 +13,7 @@ struct CameraParams {
 /// A single frame of color + depth data
 class Frame {
 public:
-    virtual ~Frame() = default;
+    virtual ~Frame();
 
     virtual const float* GetDepth() = 0;
     virtual const uint32_t* GetColor() = 0;

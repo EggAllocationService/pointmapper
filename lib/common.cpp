@@ -3,3 +3,6 @@
 //
 
 
+#include "common.h"
+
+Frame::~Frame() = default;
