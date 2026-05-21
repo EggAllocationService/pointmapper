@@ -7,4 +7,31 @@ option(REALSENSE_SUPPORT "Support for realsense cameras" ON)
 option(KINECT2_SUPPORT "Support for Xbox Kinect v2 cameras" ON)
 option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
 
-add_library(pointmapper SHARED lib/library.cpp)
+add_library(pointmapper SHARED lib/library.cpp
+        lib/DepthDevice.h
+        lib/common.h
+        lib/realsense/RealsenseFrame.cpp
+        lib/realsense/RealsenseFrame.h)
+
+if (REALSENSE_SUPPORT)
+    find_package(realsense2 REQUIRED)
+
+    target_link_libraries(pointmapper realsense2::realsense2)
+    target_sources(pointmapper
+            PRIVATE
+            lib/realsense/RealsenseDevice.cpp
+            lib/realsense/RealsenseDevice.h)
+endif()
+
+if (KINECT2_SUPPORT)
+    find_package(freenect2 REQUIRED)
+
+    target_include_directories(pointmapper PRIVATE ${freenect2_INCLUDE_DIRS})
+    target_link_libraries(pointmapper ${freenect2_LIBRARIES})
+endif()
+
+if (OAK_SUPPORT)
+    find_package(depthai REQUIRED COMPONENTS core)
+    target_link_libraries(pointmapper depthai::core)
+endif()
+
