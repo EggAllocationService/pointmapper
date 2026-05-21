@@ -13,6 +13,8 @@ RealsenseDevice::RealsenseDevice() {
     cfg.enable_stream(RS2_STREAM_DEPTH, -1, 640, 480, RS2_FORMAT_Z16, 30);
     cfg.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_RGBA8, 30);
     pipeline.start(cfg);
+
+    frame = std::make_shared<RealsenseFrame>();
 }
 
 CameraParams RealsenseDevice::GetCameraParameters() {
