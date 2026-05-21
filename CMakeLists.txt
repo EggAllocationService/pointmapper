@@ -11,7 +11,8 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/DepthDevice.h
         lib/common.h
         lib/realsense/RealsenseFrame.cpp
-        lib/realsense/RealsenseFrame.h)
+        lib/realsense/RealsenseFrame.h
+        lib/common.cpp)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)

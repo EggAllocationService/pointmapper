@@ -11,10 +11,11 @@ struct CameraParams {
 
 /// A single frame of color + depth data
 class Frame {
-    virtual ~Frame() = 0;
+public:
+    virtual ~Frame() = default;
 
-    virtual float* GetDepth() = 0;
-    virtual uint32_t* GetColor() = 0;
+    virtual const float* GetDepth() = 0;
+    virtual const uint32_t* GetColor() = 0;
 
     virtual float GetDepthUnits() = 0;
 };

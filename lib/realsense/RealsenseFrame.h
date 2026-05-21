@@ -11,11 +11,9 @@
 class RealsenseFrame : public Frame {
 public:
     ~RealsenseFrame() override;
-
-    float *GetDepth() override;
-    uint32_t *GetColor() override;
+    const float *GetDepth() override;
+    const uint32_t *GetColor() override;
 
     float GetDepthUnits() override;
-
     rs2::frameset frames;
 };
