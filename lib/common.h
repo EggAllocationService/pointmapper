@@ -15,7 +15,7 @@ struct CameraParams {
 };
 
 enum DepthType {
-    F16,
+    Z16,
     F32
 };
 

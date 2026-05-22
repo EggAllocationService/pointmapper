@@ -24,9 +24,11 @@ class BackgroundProcessor {
 public:
     BackgroundProcessor();
 
-    void processFrame(const float *frame, const void *color, std::vector<PointXYZRGB>& pointCloud);
+    void processFrame(std::shared_ptr<Frame>, std::vector<PointXYZRGB>& pointCloud);
 
     void resize(int depthWidth, int depthHeight, int colorWidth, int colorHeight, float fx, float fy, float cx, float cy);
+
+    void resize(CameraParams params);
 
     /// copies depth to maxDepth
     void recalibrate();

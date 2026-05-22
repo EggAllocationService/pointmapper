@@ -15,7 +15,8 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/background/BackgroundProcessor.cpp
         lib/background/BackgroundProcessor.h
         lib/common.h
-        lib/common.cpp)
+        lib/common.cpp
+        src/main.cpp)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -42,6 +43,10 @@ if (OAK_SUPPORT)
 endif()
 
 provide_wgpu_native("29.0.0.0")
-target_include_directories(pointmapper PRIVATE ${wgpu-native_INCLUDE_DIRS})
+target_include_directories(pointmapper PUBLIC ${wgpu-native_INCLUDE_DIRS})
 target_link_libraries(pointmapper ${wgpu-native_LIBRARIES})
+
+add_executable(testpoints src/main.cpp)
+
+target_link_libraries(testpoints pointmapper)
 

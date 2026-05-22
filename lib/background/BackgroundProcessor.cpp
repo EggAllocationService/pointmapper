@@ -3,6 +3,7 @@
 //
 
 #include <cstdio>
+#include <webgpu/wgpu.h>
 #include <iostream>
 const char kernels[] = {
 #embed "kernels.wgsl"
@@ -11,6 +12,10 @@ const char kernels[] = {
 #include "BackgroundProcessor.h"
 #include "../common.h"
 #include <assert.h>
+
+struct MaskPushConstants {
+    float scale;
+};
 
 
 static void handle_request_adapter(WGPURequestAdapterStatus status,
@@ -22,6 +27,8 @@ static void handle_request_device(WGPURequestDeviceStatus status,
                                   WGPUDevice device, WGPUStringView message,
                                   void *userdata1, void *userdata2) {
     *(WGPUDevice *)userdata1 = device;
+
+    std::cout << std::string_view(message.data, message.length) << std::endl;
 
     WGPUSupportedFeatures supportedFeatures;
     wgpuDeviceGetFeatures(device, &supportedFeatures);
@@ -38,8 +45,6 @@ static void handle_buffer_map(WGPUMapAsyncStatus status,
 }
 
 BackgroundProcessor::BackgroundProcessor() {
-
-
     auto instance = wgpuCreateInstance(nullptr);
     auto adapters = new WGPUAdapter[10];
     auto adapterCount = wgpuInstanceEnumerateAdapters(instance, nullptr, adapters);
@@ -60,10 +65,25 @@ BackgroundProcessor::BackgroundProcessor() {
                            });
     assert(adapter);
 
-    auto features = new WGPUNativeFeature[1] { WGPUNativeFeature_MappablePrimaryBuffers };
+    WGPUNativeLimits nativeLimits = {
+        .chain = {
+            .next = nullptr,
+            .sType = static_cast<WGPUSType>(WGPUSType_NativeLimits)
+        },
+        .maxImmediateSize = 128,
+        .maxNonSamplerBindings = 0,
+        .maxBindingArrayElementsPerShaderStage = 0
+    };
+
+    WGPULimits requiredLimits = WGPU_LIMITS_INIT;
+    requiredLimits.nextInChain = &nativeLimits.chain;
+    requiredLimits.maxImmediateSize = 128;
+
+    auto features = new WGPUNativeFeature[2] { WGPUNativeFeature_MappablePrimaryBuffers,  WGPUNativeFeature_Immediates };
     auto deviceDescriptor = WGPU_DEVICE_DESCRIPTOR_INIT;
+    deviceDescriptor.requiredLimits = &requiredLimits;
     deviceDescriptor.requiredFeatures = reinterpret_cast<WGPUFeatureName*>(&features[0]);
-    deviceDescriptor.requiredFeatureCount = 1;
+    deviceDescriptor.requiredFeatureCount = 2;
 
     WGPUDevice device = nullptr;
     wgpuAdapterRequestDevice(adapter, &deviceDescriptor,
@@ -87,11 +107,11 @@ BackgroundProcessor::BackgroundProcessor() {
     createPipelines();
 }
 
-void BackgroundProcessor::processFrame(const float *frame, const void *color, std::vector<PointXYZRGB>& pointCloud) {
+void BackgroundProcessor::processFrame(std::shared_ptr<Frame> frame, std::vector<PointXYZRGB>& pointCloud) {
     pointCloud.resize(info.width * info.height);
 
     // begin upload immediately
-    wgpuQueueWriteBuffer(queue, depth, 0, frame, info.width * info.height * sizeof(float));
+    wgpuQueueWriteBuffer(queue, depth, 0, frame->GetDepth(), info.width * info.height * sizeof(float));
 
     // reset result info buffer
     uint32_t newValue = 0;
@@ -109,7 +129,7 @@ void BackgroundProcessor::processFrame(const float *frame, const void *color, st
     extent.width = info.colorWidth;
     extent.height = info.colorHeight;
     extent.depthOrArrayLayers = 1;
-    wgpuQueueWriteTexture(queue, &texelCopyInfo, color, 4 * info.colorWidth * info.colorHeight, &bufLayout, &extent);
+    wgpuQueueWriteTexture(queue, &texelCopyInfo, frame->GetColor(), 4 * info.colorWidth * info.colorHeight, &bufLayout, &extent);
     wgpuQueueSubmit(queue, 0, nullptr);
 
     auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
@@ -271,6 +291,10 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
     printf("Buffers setup");
 }
 
+void BackgroundProcessor::resize(CameraParams params) {
+    resize(params.width, params.height, params.width, params.height, params.fx, params.fy, params.cx, params.cy);
+}
+
 void BackgroundProcessor::recalibrate() {
     auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
     wgpuCommandEncoderCopyBufferToBuffer(encoder, depth, 0, maxDepth, 0, sizeof(float) * info.width * info.height);
@@ -341,9 +365,19 @@ void BackgroundProcessor::createPipelines() {
     auto pipelineLayoutDesc = WGPU_PIPELINE_LAYOUT_DESCRIPTOR_INIT;
     pipelineLayoutDesc.bindGroupLayouts = &bindLayouts[0];
     pipelineLayoutDesc.bindGroupLayoutCount = 3;
+    WGPUPipelineLayoutExtras extras = {
+        .chain = {
+            .next = nullptr,
+            .sType = static_cast<WGPUSType>(WGPUSType_PipelineLayoutExtras),
+        },
+        .immediateDataSize = sizeof(MaskPushConstants)
+    };
+
+    pipelineLayoutDesc.nextInChain = &extras.chain;
+    pipelineLayoutDesc.immediateSize = sizeof(MaskPushConstants);
     auto maskPipelineLayout = wgpuDeviceCreatePipelineLayout(device, &pipelineLayoutDesc);
 
-
+    pipelineLayoutDesc.immediateSize = 0;
     pipelineLayoutDesc.bindGroupLayoutCount = 4;
     auto cloudPipelineLayout = wgpuDeviceCreatePipelineLayout(device, &pipelineLayoutDesc);
 

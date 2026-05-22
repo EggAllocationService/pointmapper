@@ -13,6 +13,7 @@ RealsenseDevice::RealsenseDevice() {
     cfg.enable_stream(RS2_STREAM_DEPTH, -1, 640, 480, RS2_FORMAT_Z16, 30);
     cfg.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_RGBA8, 30);
     pipeline.start(cfg);
+    static_cast<void>(pipeline.wait_for_frames());
 
     frame = std::make_shared<RealsenseFrame>();
 }
@@ -37,7 +38,12 @@ std::string RealsenseDevice::GetName() {
 }
 
 std::shared_ptr<Frame> RealsenseDevice::GetNextFrame() {
-    pipeline.poll_for_frames(&frame->frames);
+    auto didGetFrame = pipeline.poll_for_frames(&frame->frames);
+    if (didGetFrame) {
+        frame->ConvertDepth();
+        return std::static_pointer_cast<Frame>(frame);
+    } else {
+        return nullptr;
+    }
 
-    return std::static_pointer_cast<Frame>(frame);
 }

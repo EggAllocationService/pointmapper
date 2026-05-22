@@ -17,8 +17,12 @@ public:
     float GetDepthUnits() override;
 
     inline DepthType GetDepthType() override {
-        return F16;
+        return F32;
     }
 
+    void ConvertDepth();
+
     rs2::frameset frames;
+private:
+    std::vector<float> converted_depth;
 };

@@ -19,6 +19,10 @@ struct Point { // layout identical to PointXYZRGB
     color: u32 // need to use unpack4x8unorm, color channels are packed
 }
 
+struct MaskPushConstants {
+    scale: f32
+}
+
 // group 0 - uniforms
 // group 1 - depth i/o
 // group 2 - masking state
@@ -53,10 +57,12 @@ var texSampler: sampler;
 @binding(1)
 var colorTex: texture_2d<f32>;
 
+var<immediate> c: MaskPushConstants;
+
 @compute @workgroup_size(1)
 fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     let idx = (pos.y * info.depth_width) + pos.x;
-    var d = depth[idx];
+    var d = depth[idx] * c.scale;
     if d > 4 {
         d = 1000;
     }
