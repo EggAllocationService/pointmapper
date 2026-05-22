@@ -17,84 +17,14 @@ struct MaskPushConstants {
     float scale;
 };
 
-
-static void handle_request_adapter(WGPURequestAdapterStatus status,
-                                   WGPUAdapter adapter, WGPUStringView message,
-                                   void *userdata1, void *userdata2) {
-    *(WGPUAdapter *)userdata1 = adapter;
-}
-static void handle_request_device(WGPURequestDeviceStatus status,
-                                  WGPUDevice device, WGPUStringView message,
-                                  void *userdata1, void *userdata2) {
-    *(WGPUDevice *)userdata1 = device;
-
-    std::cout << std::string_view(message.data, message.length) << std::endl;
-
-    WGPUSupportedFeatures supportedFeatures;
-    wgpuDeviceGetFeatures(device, &supportedFeatures);
-    printf("Features enabled: %lu", supportedFeatures.featureCount);
-
-    for (int i = 0; i < supportedFeatures.featureCount; i++) {
-        printf("\t 0x%08x \n", supportedFeatures.features[i]);
-    }
-}
-
 static void handle_buffer_map(WGPUMapAsyncStatus status,
                               WGPUStringView message,
                               void *userdata1, void *userdata2) {
 }
 
-BackgroundProcessor::BackgroundProcessor() {
-    auto instance = wgpuCreateInstance(nullptr);
-    auto adapters = new WGPUAdapter[10];
-    auto adapterCount = wgpuInstanceEnumerateAdapters(instance, nullptr, adapters);
-
-    for (int i = 0; i < adapterCount; i++) {
-        printf("Adapter #%d:", i);
-        WGPUAdapterInfo info;
-        wgpuAdapterGetInfo(adapters[i], &info);
-        std::cout << "\tName: " << std::string_view(info.device.data, info.device.length) << std::endl;
-    }
-    delete[] adapters;
-
-    WGPUAdapter adapter = nullptr;
-    wgpuInstanceRequestAdapter(instance, nullptr,
-                           (const WGPURequestAdapterCallbackInfo){
-                               .callback = handle_request_adapter,
-                               .userdata1 = &adapter
-                           });
-    assert(adapter);
-
-    WGPUNativeLimits nativeLimits = {
-        .chain = {
-            .next = nullptr,
-            .sType = static_cast<WGPUSType>(WGPUSType_NativeLimits)
-        },
-        .maxImmediateSize = 128,
-        .maxNonSamplerBindings = 0,
-        .maxBindingArrayElementsPerShaderStage = 0
-    };
-
-    WGPULimits requiredLimits = WGPU_LIMITS_INIT;
-    requiredLimits.nextInChain = &nativeLimits.chain;
-    requiredLimits.maxImmediateSize = 128;
-
-    auto features = new WGPUNativeFeature[2] { WGPUNativeFeature_MappablePrimaryBuffers,  WGPUNativeFeature_Immediates };
-    auto deviceDescriptor = WGPU_DEVICE_DESCRIPTOR_INIT;
-    deviceDescriptor.requiredLimits = &requiredLimits;
-    deviceDescriptor.requiredFeatures = reinterpret_cast<WGPUFeatureName*>(&features[0]);
-    deviceDescriptor.requiredFeatureCount = 2;
-
-    WGPUDevice device = nullptr;
-    wgpuAdapterRequestDevice(adapter, &deviceDescriptor,
-                           (const WGPURequestDeviceCallbackInfo){
-                               .callback = handle_request_device,
-                               .userdata1 = &device
-                           });
-    assert(device);
-
+BackgroundProcessor::BackgroundProcessor(WGPUDevice device, WGPUQueue queue) {
     this->device = device;
-    this->queue = wgpuDeviceGetQueue(device);
+    this->queue = queue;
 
     auto kernelSource = WGPU_SHADER_SOURCE_WGSL_INIT;
     kernelSource.code.data = kernels;
@@ -107,7 +37,7 @@ BackgroundProcessor::BackgroundProcessor() {
     createPipelines();
 }
 
-void BackgroundProcessor::processFrame(std::shared_ptr<Frame> frame, std::vector<PointXYZRGB>& pointCloud) {
+void BackgroundProcessor::processFrame(const std::shared_ptr<Frame>& frame, std::vector<PointXYZRGB>& pointCloud) {
     pointCloud.resize(info.width * info.height);
 
     // begin upload immediately
@@ -140,6 +70,10 @@ void BackgroundProcessor::processFrame(std::shared_ptr<Frame> frame, std::vector
     wgpuComputePassEncoderSetBindGroup(maskPass, 1, bindGroups[1], 0, nullptr);
     wgpuComputePassEncoderSetBindGroup(maskPass, 2, bindGroups[2], 0, nullptr);
     wgpuComputePassEncoderSetPipeline(maskPass, maskPipeline);
+    MaskPushConstants constants = {
+        .scale = frame->GetDepthUnits()
+    };
+    wgpuComputePassEncoderSetImmediates(maskPass, 0, sizeof(MaskPushConstants), &constants);
     wgpuComputePassEncoderDispatchWorkgroups(maskPass, info.width, info.height, 1);
     wgpuComputePassEncoderEnd(maskPass);
 

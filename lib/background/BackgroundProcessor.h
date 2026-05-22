@@ -22,9 +22,9 @@ struct PipelineInfo {
 
 class BackgroundProcessor {
 public:
-    BackgroundProcessor();
+    BackgroundProcessor(WGPUDevice device, WGPUQueue queue);
 
-    void processFrame(std::shared_ptr<Frame>, std::vector<PointXYZRGB>& pointCloud);
+    void processFrame(const std::shared_ptr<Frame>&, std::vector<PointXYZRGB>& pointCloud);
 
     void resize(int depthWidth, int depthHeight, int colorWidth, int colorHeight, float fx, float fy, float cx, float cy);
 

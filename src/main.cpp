@@ -12,6 +12,8 @@
 #include <iostream>
 #include <execinfo.h> // For backtrace() on Linux/macOS
 
+#include "../lib/PointmapperUtils.h"
+
 void my_terminate_handler() {
     void* array[10];
     size_t size = backtrace(array, 10);
@@ -25,8 +27,10 @@ void my_terminate_handler() {
 
 int main() {
     std::set_terminate(my_terminate_handler);
+    auto utils = new PointmapperUtils();
     auto device = new RealsenseDevice();
-    auto processor = new BackgroundProcessor();
+    auto processor = utils->GetBackgroundProcessor();
+
 
     processor->resize(device->GetCameraParameters());
 

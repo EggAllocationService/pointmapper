@@ -16,7 +16,9 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/background/BackgroundProcessor.h
         lib/common.h
         lib/common.cpp
-        src/main.cpp)
+        src/main.cpp
+        lib/PointmapperUtils.cpp
+        lib/PointmapperUtils.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
