@@ -3,6 +3,9 @@ project(Pointmapper)
 
 set(CMAKE_CXX_STANDARD 20)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(wgpu-native)
+
 option(REALSENSE_SUPPORT "Support for realsense cameras" ON)
 option(KINECT2_SUPPORT "Support for Xbox Kinect v2 cameras" ON)
 option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
@@ -35,4 +38,8 @@ if (OAK_SUPPORT)
     find_package(depthai REQUIRED COMPONENTS core)
     target_link_libraries(pointmapper depthai::core)
 endif()
+
+provide_wgpu_native("29.0.0.0")
+target_include_directories(pointmapper PRIVATE ${wgpu-native_INCLUDE_DIRS})
+target_link_libraries(pointmapper ${wgpu-native_LIBRARIES})
 
