@@ -12,6 +12,8 @@ option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
 
 add_library(pointmapper SHARED lib/library.cpp
         lib/DepthDevice.h
+        lib/background/BackgroundProcessor.cpp
+        lib/background/BackgroundProcessor.h
         lib/common.h
         lib/common.cpp)
 

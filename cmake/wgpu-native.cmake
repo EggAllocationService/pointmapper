@@ -58,5 +58,14 @@ function(provide_wgpu_native WGPU_VERSION)
         NO_DEFAULT_PATH
         REQUIRED
     )
-    set(wgpu-native_LIBRARIES "${WGPU_NATIVE_LIB}" PARENT_SCOPE)
+
+    if (WIN32)
+        set(OS_LIBRARIES d3dcompiler ws2_32 userenv bcrypt ntdll opengl32 Propsys RuntimeObject)
+    elseif(UNIX AND NOT APPLE)
+        set(OS_LIBRARIES "-lm -ldl")
+    elseif(APPLE)
+        set(OS_LIBRARIES "-framework Foundation -framework CoreFoundation -framework QuartzCore -framework Metal")
+    endif()
+
+    set(wgpu-native_LIBRARIES "${WGPU_NATIVE_LIB}" ${OS_LIBRARIES} PARENT_SCOPE)
 endfunction()
