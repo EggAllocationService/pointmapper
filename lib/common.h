@@ -10,6 +10,11 @@ struct CameraParams {
     int width, height;
 };
 
+enum DepthType {
+    F16,
+    F32
+};
+
 /// A single frame of color + depth data
 class Frame {
 public:
@@ -19,4 +24,5 @@ public:
     virtual const uint32_t* GetColor() = 0;
 
     virtual float GetDepthUnits() = 0;
+    virtual DepthType GetDepthType() = 0;
 };

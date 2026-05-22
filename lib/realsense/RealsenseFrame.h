@@ -15,5 +15,10 @@ public:
     const uint32_t *GetColor() override;
 
     float GetDepthUnits() override;
+
+    inline DepthType GetDepthType() override {
+        return F16;
+    }
+
     rs2::frameset frames;
 };
