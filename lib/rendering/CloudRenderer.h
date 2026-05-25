@@ -18,6 +18,7 @@ public:
     void spinOnce();
 private:
     void clear(WGPUTextureView textureView);
+    void createPipelines();
 
     std::shared_ptr<BackgroundProcessor> backgroundProcessor;
     GLFWwindow* window;
@@ -28,4 +29,6 @@ private:
     WGPUTexture depthTexture;
     WGPUTextureView depthTextureView;
     WGPUShaderModule shaderModule;
+
+    WGPURenderPipeline pointsPipeline;
 };

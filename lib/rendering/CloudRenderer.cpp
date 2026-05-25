@@ -59,6 +59,8 @@ CloudRenderer::CloudRenderer(std::shared_ptr<BackgroundProcessor> backgroundProc
     auto shaderDescriptor = WGPU_SHADER_MODULE_DESCRIPTOR_INIT;
     shaderDescriptor.nextInChain = &shaderSource.chain;
     this->shaderModule = wgpuDeviceCreateShaderModule(device, &shaderDescriptor);
+
+    createPipelines();
 }
 
 void CloudRenderer::spinOnce() {
@@ -114,6 +116,80 @@ void CloudRenderer::clear(WGPUTextureView view) {
     auto bundle = wgpuCommandEncoderFinish(encoder, nullptr);
 
     wgpuQueueSubmit(queue, 1, &bundle);
+}
+
+void CloudRenderer::createPipelines() {
+    // point cloud render pipeline
+
+    auto fragTarget = WGPU_COLOR_TARGET_STATE_INIT;
+    fragTarget.format = surfaceConfig.format;
+    fragTarget.writeMask = WGPUColorWriteMask_All;
+
+    auto fragDesc = WGPU_FRAGMENT_STATE_INIT;
+    fragDesc.module = shaderModule;
+    fragDesc.targetCount = 1;
+    fragDesc.targets = &fragTarget;
+
+    auto attr = WGPU_VERTEX_ATTRIBUTE_INIT;
+    attr.format = WGPUVertexFormat_Float32x4;
+    attr.shaderLocation = 0;
+    attr.offset = 0;
+
+    auto vtx = WGPU_VERTEX_BUFFER_LAYOUT_INIT;
+    vtx.arrayStride = sizeof(float) * 4;
+    vtx.attributeCount = 1;
+    vtx.attributes = &attr;
+    vtx.stepMode = WGPUVertexStepMode_Vertex;
+
+    WGPUDepthStencilState depthState = {
+        .nextInChain = nullptr,
+        .format = WGPUTextureFormat_Depth24Plus,
+        .depthWriteEnabled = WGPUOptionalBool_True,
+        .depthCompare = WGPUCompareFunction_Less,
+        .stencilFront = WGPU_STENCIL_FACE_STATE_INIT,
+        .stencilBack = WGPU_STENCIL_FACE_STATE_INIT,
+        .stencilReadMask = 0,
+        .stencilWriteMask = 0,
+        .depthBias = 0,
+        .depthBiasSlopeScale = 0,
+        .depthBiasClamp = 0
+    };
+
+    auto desc = WGPURenderPipelineDescriptor {
+        .nextInChain = nullptr,
+        .label = {},
+        .layout = nullptr,
+        .vertex = {
+            .nextInChain = nullptr,
+            .module = shaderModule,
+            .entryPoint = {
+                .data = "vs",
+                .length = 2
+            },
+            .constantCount = 0,
+            .constants = nullptr,
+            .bufferCount = 1,
+            .buffers = &vtx
+        },
+        .primitive = {
+            .nextInChain = nullptr,
+            .topology = WGPUPrimitiveTopology_TriangleList,
+            .stripIndexFormat = WGPUIndexFormat_Undefined,
+            .frontFace = WGPUFrontFace_CCW,
+            .cullMode = WGPUCullMode_Back,
+            .unclippedDepth = false,
+        },
+        .depthStencil = &depthState,
+        .multisample = {
+            .nextInChain = nullptr,
+            .count = 1,
+            .mask = 0xFFFFFFFF,
+            .alphaToCoverageEnabled = true
+        },
+        .fragment = &fragDesc
+    };
+
+    pointsPipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
 }
 
 
