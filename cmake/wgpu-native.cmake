@@ -68,4 +68,9 @@ function(provide_wgpu_native WGPU_VERSION)
     endif()
 
     set(wgpu-native_LIBRARIES "${WGPU_NATIVE_LIB}" ${OS_LIBRARIES} PARENT_SCOPE)
+
+    add_library(webgpu STATIC IMPORTED)
+    set_property(TARGET webgpu PROPERTY IMPORTED_LOCATION ${WGPU_NATIVE_LIB})
+    target_include_directories(webgpu INTERFACE "${wgpu-native_SOURCE_DIR}/include")
+    target_link_libraries(webgpu INTERFACE ${OS_LIBRARIES})
 endfunction()

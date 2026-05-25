@@ -4,6 +4,9 @@
 #pragma once
 #include <cstdint>
 
+// Opaque pointer for a GPU-side cloud data structure
+typedef void* PointmapperDeviceCloud;
+
 
 struct PointXYZRGB {
     float x, y, z;

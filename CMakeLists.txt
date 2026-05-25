@@ -9,6 +9,7 @@ include(wgpu-native)
 option(REALSENSE_SUPPORT "Support for realsense cameras" ON)
 option(KINECT2_SUPPORT "Support for Xbox Kinect v2 cameras" ON)
 option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
+option(VISUALIZATION "Build visualization utilities" ON)
 
 add_library(pointmapper SHARED lib/library.cpp
         lib/DepthDevice.h
@@ -54,8 +55,24 @@ if (OAK_SUPPORT)
 endif()
 
 provide_wgpu_native("29.0.0.0")
-target_include_directories(pointmapper PUBLIC ${wgpu-native_INCLUDE_DIRS})
-target_link_libraries(pointmapper ${wgpu-native_LIBRARIES})
+
+if (VISUALIZATION)
+    include(FetchContent)
+    set(GLFW_LIBRARY_TYPE "STATIC")
+    FetchContent_Declare(glfw3-source
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+    )
+    FetchContent_MakeAvailable(glfw3-source)
+
+    FetchContent_Declare(glfw3-webgpu-source
+        GIT_REPOSITORY https://github.com/eliemichel/glfw3webgpu.git
+        GIT_TAG main
+    )
+    FetchContent_MakeAvailable(glfw3-webgpu-source)
+    target_link_libraries(pointmapper glfw glfw3webgpu)
+endif()
+target_link_libraries(pointmapper webgpu)
 
 add_executable(testpoints src/main.cpp)
 

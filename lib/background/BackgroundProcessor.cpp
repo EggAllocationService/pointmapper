@@ -3,7 +3,7 @@
 //
 
 #include <cstdio>
-#include <webgpu/wgpu.h>
+#include <webgpu/webgpu.h>
 #include <iostream>
 const char kernels[] = {
 #embed "kernels.wgsl"
