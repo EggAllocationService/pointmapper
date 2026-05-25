@@ -14,11 +14,18 @@ class CloudRenderer {
 public:
     CloudRenderer(std::shared_ptr<BackgroundProcessor> backgroundProcessor, WGPUInstance instance, WGPUAdapter adapter, WGPUDevice device);
 
+    // Performs the render loop once
+    void spinOnce();
 private:
+    void clear(WGPUTextureView textureView);
+
     std::shared_ptr<BackgroundProcessor> backgroundProcessor;
     GLFWwindow* window;
     WGPUDevice device;
     WGPUQueue queue;
     WGPUSurface surface;
     WGPUSurfaceConfiguration surfaceConfig;
+    WGPUTexture depthTexture;
+    WGPUTextureView depthTextureView;
+    WGPUShaderModule shaderModule;
 };

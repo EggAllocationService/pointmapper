@@ -46,7 +46,7 @@ void BackgroundProcessor::processFrame(const std::shared_ptr<Frame>& frame, std:
 
     // reset result info buffer
     uint32_t newValue = 0;
-    wgpuQueueWriteBuffer(queue, outputInfo, 0, &newValue, sizeof(uint32_t));
+    wgpuQueueWriteBuffer(queue, outputInfo, 4, &newValue, sizeof(uint32_t));
 
     auto texelCopyInfo = WGPU_TEXEL_COPY_TEXTURE_INFO_INIT;
     texelCopyInfo.aspect = WGPUTextureAspect_All;

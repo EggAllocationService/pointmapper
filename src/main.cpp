@@ -31,6 +31,7 @@ int main() {
     auto utils = new PointmapperPipeline();
     auto device = new Kinect2Device();
     auto processor = utils->GetBackgroundProcessor();
+    auto renderer = utils->GetCloudRenderer();
     utils->resize(device->GetCameraParameters());
 
     std::vector<PointXYZRGB> points;
@@ -43,5 +44,7 @@ int main() {
         auto end = std::chrono::high_resolution_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         printf("Processed %lu points in %ldms\n", points.size(), elapsed.count());
+        renderer->spinOnce();
+
     }
 }

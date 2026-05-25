@@ -90,6 +90,7 @@ PointmapperPipeline::PointmapperPipeline() {
     infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_Indirect | WGPUBufferUsage_CopyDst;
     this->infoBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
     backgroundProcessor = std::make_shared<BackgroundProcessor>(DEVICE, QUEUE, INFO_BUFFER);
+    cloudRenderer = std::make_shared<CloudRenderer>(backgroundProcessor, instance, adapter, DEVICE);
 }
 
 PointmapperPipeline::~PointmapperPipeline() {
@@ -99,6 +100,10 @@ PointmapperPipeline::~PointmapperPipeline() {
 
 std::shared_ptr<BackgroundProcessor> PointmapperPipeline::GetBackgroundProcessor() {
     return backgroundProcessor;
+}
+
+std::shared_ptr<CloudRenderer> PointmapperPipeline::GetCloudRenderer() {
+    return cloudRenderer;
 }
 
 void PointmapperPipeline::resize(CameraParams params) {
