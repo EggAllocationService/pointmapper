@@ -219,7 +219,7 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
 
 void BackgroundProcessor::resize(CameraParams params, WGPUBuffer pointBuffer) {
     this->output = pointBuffer;
-    resize(params.width, params.height, params.width, params.height, params.fx, params.fy, params.cx, params.cy);
+    resize(params.width, params.height, params.colorWidth, params.colorHeight, params.fx, params.fy, params.cx, params.cy);
 }
 
 void BackgroundProcessor::recalibrate() {

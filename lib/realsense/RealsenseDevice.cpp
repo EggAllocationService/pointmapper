@@ -29,6 +29,8 @@ CameraParams RealsenseDevice::GetCameraParameters() {
         .cy = intrinsics.ppy,
         .width = intrinsics.width,
         .height = intrinsics.height,
+        .colorWidth = 640,
+        .colorHeight = 480
     };
 }
 

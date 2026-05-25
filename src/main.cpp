@@ -13,6 +13,7 @@
 #include <execinfo.h> // For backtrace() on Linux/macOS
 
 #include "../lib/PointmapperPipeline.h"
+#include "../lib/kinect2/Kinect2Device.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -28,7 +29,7 @@ void my_terminate_handler() {
 int main() {
     std::set_terminate(my_terminate_handler);
     auto utils = new PointmapperPipeline();
-    auto device = new RealsenseDevice();
+    auto device = new Kinect2Device();
     auto processor = utils->GetBackgroundProcessor();
     utils->resize(device->GetCameraParameters());
 

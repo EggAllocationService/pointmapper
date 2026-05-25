@@ -12,6 +12,7 @@ struct PointXYZRGB {
 struct CameraParams {
     float fx, fy, cx, cy;
     int width, height;
+    int colorWidth, colorHeight;
 };
 
 enum DepthType {

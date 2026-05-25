@@ -20,7 +20,11 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/PointmapperPipeline.cpp
         lib/PointmapperPipeline.h
         lib/rendering/CloudRenderer.cpp
-        lib/rendering/CloudRenderer.h)
+        lib/rendering/CloudRenderer.h
+        lib/kinect2/Kinect2Device.cpp
+        lib/kinect2/Kinect2Device.h
+        lib/kinect2/Kinect2Frame.cpp
+        lib/kinect2/Kinect2Frame.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
