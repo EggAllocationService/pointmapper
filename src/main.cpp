@@ -30,7 +30,7 @@ int main() {
     auto utils = new PointmapperPipeline();
     auto device = new RealsenseDevice();
     auto processor = utils->GetBackgroundProcessor();
-    processor->resize(device->GetCameraParameters());
+    utils->resize(device->GetCameraParameters());
 
     std::vector<PointXYZRGB> points;
 

@@ -87,7 +87,7 @@ PointmapperPipeline::PointmapperPipeline() {
 
     auto infoBufferDesc = WGPU_BUFFER_DESCRIPTOR_INIT;
     infoBufferDesc.size = sizeof(uint32_t) * 4;
-    infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_Indirect;
+    infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_Indirect | WGPUBufferUsage_CopyDst;
     this->infoBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
     backgroundProcessor = std::make_shared<BackgroundProcessor>(DEVICE, QUEUE, INFO_BUFFER);
 }

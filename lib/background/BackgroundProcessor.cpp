@@ -88,9 +88,9 @@ void BackgroundProcessor::processFrame(const std::shared_ptr<Frame>& frame, std:
     wgpuComputePassEncoderEnd(cloudPass);
 
     auto outputSize = info.width * info.height * sizeof(PointXYZRGB);
-   /* wgpuCommandEncoderCopyBufferToBuffer(encoder, output, 0,
+   wgpuCommandEncoderCopyBufferToBuffer(encoder, output, 0,
         outputCopy, 0,
-        outputSize);*/
+        outputSize);
 
     auto commandBuffer = wgpuCommandEncoderFinish(encoder, nullptr);
     wgpuCommandEncoderRelease(encoder);
@@ -98,16 +98,16 @@ void BackgroundProcessor::processFrame(const std::shared_ptr<Frame>& frame, std:
     wgpuQueueSubmit(queue, 1, &commandBuffer);
     wgpuCommandBufferRelease(commandBuffer);
 
-    wgpuBufferMapAsync(output, WGPUMapMode_Read, 0, outputSize,
+    wgpuBufferMapAsync(outputCopy, WGPUMapMode_Read, 0, outputSize,
         (const WGPUBufferMapCallbackInfo){
                                .callback = handle_buffer_map
                            });
     wgpuDevicePoll(device, true, nullptr);
 
-    auto results = wgpuBufferGetMappedRange(output, 0, outputSize);
+    auto results = wgpuBufferGetMappedRange(outputCopy, 0, outputSize);
     memcpy(pointCloud.data(), results, outputSize);
 
-    wgpuBufferUnmap(output);
+    wgpuBufferUnmap(outputCopy);
 }
 
 
@@ -243,7 +243,7 @@ void BackgroundProcessor::createPipelines() {
     group0Bindings[0].visibility = WGPUShaderStage_Compute;
 
     group0Bindings[1].buffer.type = WGPUBufferBindingType_Storage;
-    group0Bindings[1].buffer.minBindingSize = 4;
+    group0Bindings[1].buffer.minBindingSize = 16;
     group0Bindings[1].visibility = WGPUShaderStage_Compute;
     group0Bindings[1].binding = 1;
 
