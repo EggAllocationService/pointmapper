@@ -11,7 +11,10 @@ struct PipelineInfo {
 }
 
 struct OutputInfo {
-    validPoints: atomic<u32>
+    vertexCount: u32,
+    instanceCount: atomic<u32>,
+    firstVertex: u32,
+    firstInstance: u32
 }
 
 struct Point { // layout identical to PointXYZRGB
@@ -99,7 +102,7 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
     let y = (fpos.y - info.cy) * (d/info.fy);
     let z = d;
 
-    let oIdx = atomicAdd(&outInfo.validPoints, 1);
+    let oIdx = atomicAdd(&outInfo.instanceCount, 1);
 
     output[oIdx].pos = vec4f(x, y, z, 1);
     if d == 0 || d > 4 {

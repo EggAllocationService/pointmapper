@@ -22,13 +22,13 @@ struct PipelineInfo {
 
 class BackgroundProcessor {
 public:
-    BackgroundProcessor(WGPUDevice device, WGPUQueue queue);
+    BackgroundProcessor(WGPUDevice device, WGPUQueue queue, WGPUBuffer infoBuffer);
 
     void processFrame(const std::shared_ptr<Frame>&, std::vector<PointXYZRGB>& pointCloud);
 
     void resize(int depthWidth, int depthHeight, int colorWidth, int colorHeight, float fx, float fy, float cx, float cy);
 
-    void resize(CameraParams params);
+    void resize(CameraParams params, WGPUBuffer pointBuffer);
 
     /// copies depth to maxDepth
     void recalibrate();

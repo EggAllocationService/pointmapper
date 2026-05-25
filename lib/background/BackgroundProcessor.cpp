@@ -22,9 +22,10 @@ static void handle_buffer_map(WGPUMapAsyncStatus status,
                               void *userdata1, void *userdata2) {
 }
 
-BackgroundProcessor::BackgroundProcessor(WGPUDevice device, WGPUQueue queue) {
+BackgroundProcessor::BackgroundProcessor(WGPUDevice device, WGPUQueue queue, WGPUBuffer infoBuf) {
     this->device = device;
     this->queue = queue;
+    this->outputInfo = infoBuf;
 
     auto kernelSource = WGPU_SHADER_SOURCE_WGSL_INIT;
     kernelSource.code.data = kernels;
@@ -126,8 +127,6 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
         wgpuBufferRelease(maxDepth);
         wgpuBufferRelease(prevDepth);
         wgpuBufferRelease(uniforms);
-        wgpuBufferRelease(output);
-        wgpuBufferRelease(outputInfo);
         wgpuBufferRelease(outputCopy);
         wgpuTextureRelease(colorTexture);
         wgpuSamplerRelease(sampler);
@@ -152,16 +151,9 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
     wgpuQueueWriteBuffer(queue, uniforms, 0, &info, sizeof(PipelineInfo)); // begin upload immediately
 
     auto outputBufferDescriptor = WGPU_BUFFER_DESCRIPTOR_INIT;
-    outputBufferDescriptor.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_MapRead;
     outputBufferDescriptor.size = sizeof(PointXYZRGB) * depthHeight * depthWidth;
-    this->output = wgpuDeviceCreateBuffer(device, &outputBufferDescriptor);
     outputBufferDescriptor.usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_MapRead;
     this->outputCopy = wgpuDeviceCreateBuffer(device, &outputBufferDescriptor);
-
-    auto outinfoBufferDescriptor = WGPU_BUFFER_DESCRIPTOR_INIT;
-    outinfoBufferDescriptor.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc | WGPUBufferUsage_CopyDst;
-    outinfoBufferDescriptor.size = 4;
-    this->outputInfo = wgpuDeviceCreateBuffer(device, &outinfoBufferDescriptor);
 
     auto colorTexDescriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
     colorTexDescriptor.dimension = WGPUTextureDimension_2D;
@@ -225,7 +217,8 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
     printf("Buffers setup");
 }
 
-void BackgroundProcessor::resize(CameraParams params) {
+void BackgroundProcessor::resize(CameraParams params, WGPUBuffer pointBuffer) {
+    this->output = pointBuffer;
     resize(params.width, params.height, params.width, params.height, params.fx, params.fy, params.cx, params.cy);
 }
 

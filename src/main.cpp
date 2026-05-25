@@ -12,7 +12,7 @@
 #include <iostream>
 #include <execinfo.h> // For backtrace() on Linux/macOS
 
-#include "../lib/PointmapperUtils.h"
+#include "../lib/PointmapperPipeline.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -27,11 +27,9 @@ void my_terminate_handler() {
 
 int main() {
     std::set_terminate(my_terminate_handler);
-    auto utils = new PointmapperUtils();
+    auto utils = new PointmapperPipeline();
     auto device = new RealsenseDevice();
     auto processor = utils->GetBackgroundProcessor();
-
-
     processor->resize(device->GetCameraParameters());
 
     std::vector<PointXYZRGB> points;

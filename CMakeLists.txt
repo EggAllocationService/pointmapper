@@ -17,8 +17,10 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/common.h
         lib/common.cpp
         src/main.cpp
-        lib/PointmapperUtils.cpp
-        lib/PointmapperUtils.h)
+        lib/PointmapperPipeline.cpp
+        lib/PointmapperPipeline.h
+        lib/rendering/CloudRenderer.cpp
+        lib/rendering/CloudRenderer.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)

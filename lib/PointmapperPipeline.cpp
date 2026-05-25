@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-05-22.
 //
 
-#include "PointmapperUtils.h"
+#include "PointmapperPipeline.h"
 
 #include <cassert>
 #include <iostream>
@@ -30,8 +30,10 @@ static void handle_request_device(WGPURequestDeviceStatus status,
 
 #define QUEUE static_cast<WGPUQueue>(this->queue)
 #define DEVICE static_cast<WGPUDevice>(this->device)
+#define POINT_BUFFER static_cast<WGPUBuffer>(this->pointBuffer)
+#define INFO_BUFFER static_cast<WGPUBuffer>(this->infoBuffer)
 
-PointmapperUtils::PointmapperUtils() {
+PointmapperPipeline::PointmapperPipeline() {
     auto instance = wgpuCreateInstance(nullptr);
     auto adapters = new WGPUAdapter[10];
     auto adapterCount = wgpuInstanceEnumerateAdapters(instance, nullptr, adapters);
@@ -82,13 +84,34 @@ PointmapperUtils::PointmapperUtils() {
 
     this->device = device;
     this->queue = wgpuDeviceGetQueue(device);
+
+    auto infoBufferDesc = WGPU_BUFFER_DESCRIPTOR_INIT;
+    infoBufferDesc.size = sizeof(uint32_t) * 4;
+    infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_Indirect;
+    this->infoBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
+    backgroundProcessor = std::make_shared<BackgroundProcessor>(DEVICE, QUEUE, INFO_BUFFER);
 }
 
-PointmapperUtils::~PointmapperUtils() {
+PointmapperPipeline::~PointmapperPipeline() {
     wgpuDeviceRelease(DEVICE);
     wgpuQueueRelease(QUEUE);
 }
 
-std::unique_ptr<BackgroundProcessor> PointmapperUtils::GetBackgroundProcessor() {
-    return std::make_unique<BackgroundProcessor>(DEVICE, QUEUE);
+std::shared_ptr<BackgroundProcessor> PointmapperPipeline::GetBackgroundProcessor() {
+    return backgroundProcessor;
+}
+
+void PointmapperPipeline::resize(CameraParams params) {
+    if (pointBuffer != nullptr) {
+        wgpuBufferRelease(POINT_BUFFER);
+    }
+
+    auto infoBufferDesc = WGPU_BUFFER_DESCRIPTOR_INIT;
+    infoBufferDesc.size = params.width * params.height * sizeof(PointXYZRGB);
+    infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc;
+    this->pointBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
+
+    if (backgroundProcessor != nullptr) {
+        backgroundProcessor->resize(params, POINT_BUFFER);
+    }
 }
