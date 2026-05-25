@@ -191,8 +191,3 @@ void CloudRenderer::createPipelines() {
 
     pointsPipeline = wgpuDeviceCreateRenderPipeline(device, &desc);
 }
-
-
-
-
-
