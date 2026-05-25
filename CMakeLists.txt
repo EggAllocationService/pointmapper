@@ -20,11 +20,7 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/PointmapperPipeline.cpp
         lib/PointmapperPipeline.h
         lib/rendering/CloudRenderer.cpp
-        lib/rendering/CloudRenderer.h
-        lib/kinect2/Kinect2Device.cpp
-        lib/kinect2/Kinect2Device.h
-        lib/kinect2/Kinect2Frame.cpp
-        lib/kinect2/Kinect2Frame.h)
+        lib/rendering/CloudRenderer.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -43,6 +39,13 @@ if (KINECT2_SUPPORT)
 
     target_include_directories(pointmapper PRIVATE ${freenect2_INCLUDE_DIRS})
     target_link_libraries(pointmapper ${freenect2_LIBRARIES})
+
+    target_sources(pointmapper
+            PRIVATE
+            lib/kinect2/Kinect2Device.cpp
+            lib/kinect2/Kinect2Device.h
+            lib/kinect2/Kinect2Frame.cpp
+            lib/kinect2/Kinect2Frame.h)
 endif()
 
 if (OAK_SUPPORT)
