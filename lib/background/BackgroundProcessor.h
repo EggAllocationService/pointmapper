@@ -32,6 +32,9 @@ public:
 
     /// copies depth to maxDepth
     void recalibrate();
+
+    ///
+    PointmapperDeviceCloud getOuputBuffer() const;
 private:
     void createPipelines();
 

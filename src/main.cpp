@@ -29,7 +29,7 @@ void my_terminate_handler() {
 int main() {
     std::set_terminate(my_terminate_handler);
     auto utils = new PointmapperPipeline();
-    auto device = new Kinect2Device();
+    auto device = new RealsenseDevice();
     auto processor = utils->GetBackgroundProcessor();
     auto renderer = utils->GetCloudRenderer();
     utils->resize(device->GetCameraParameters());

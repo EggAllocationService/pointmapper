@@ -4,15 +4,21 @@
 
 #include "CloudRenderer.h"
 #include "glfw3webgpu.h"
+#include "cube.h"
+#include "Matrix.h"
+#include "GLMath.h"
 
 const char shaders[] = {
 #embed "shaders.wgsl"
 };
 
 
-CloudRenderer::CloudRenderer(std::shared_ptr<BackgroundProcessor> backgroundProcessor, WGPUInstance instance, WGPUAdapter adapter, WGPUDevice device) {
+
+
+CloudRenderer::CloudRenderer(std::shared_ptr<BackgroundProcessor> backgroundProcessor, WGPUInstance instance, WGPUAdapter adapter, WGPUDevice device, WGPUBuffer infoBuffer) {
     this->backgroundProcessor = backgroundProcessor;
     this->device = device;
+    this->infoBuffer = infoBuffer;
     this->queue = wgpuDeviceGetQueue(device);
 
     glfwInit();
@@ -61,6 +67,35 @@ CloudRenderer::CloudRenderer(std::shared_ptr<BackgroundProcessor> backgroundProc
     this->shaderModule = wgpuDeviceCreateShaderModule(device, &shaderDescriptor);
 
     createPipelines();
+
+    auto modelDesc = WGPUBufferDescriptor {
+        .nextInChain = nullptr,
+        .label = {},
+        .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Vertex,
+        .size = sizeof(float) * 36 * 4,
+        .mappedAtCreation = false
+    };
+    this->cubeModel = wgpuDeviceCreateBuffer(device, &modelDesc);
+    wgpuQueueWriteBuffer(queue, cubeModel, 0, kCubeVertices, sizeof(float) * 36 * 4);
+    wgpuQueueSubmit(queue, 0, nullptr);
+
+    auto uniformDesc = WGPUBufferDescriptor {
+        .nextInChain = nullptr,
+        .label = {},
+        .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
+        .size = sizeof(CloudUniforms),
+        .mappedAtCreation = false
+    };
+    this->uniformBuffer = wgpuDeviceCreateBuffer(device, &uniformDesc);
+
+    auto uniformGroupDesc = WGPU_BIND_GROUP_ENTRY_INIT;
+    uniformGroupDesc.buffer = uniformBuffer;
+    auto bindGroupDesc = WGPU_BIND_GROUP_DESCRIPTOR_INIT;
+    bindGroupDesc.layout = wgpuRenderPipelineGetBindGroupLayout(pointsPipeline, 0);
+    bindGroupDesc.entries = &uniformGroupDesc;
+    bindGroupDesc.entryCount = 1;
+
+    bindGroups[0] = wgpuDeviceCreateBindGroup(device, &bindGroupDesc);
 }
 
 void CloudRenderer::spinOnce() {
@@ -68,12 +103,57 @@ void CloudRenderer::spinOnce() {
         return;
     }
 
+    auto viewMat = glengine::math::viewMatrix(cameraTransform.GetAbsoluteMatrix());
+    auto projMat = glengine::math::perspectiveMatrix(90, 640.f / 480.f, 0.1, 100);
+
+    uniforms.worldProjection = projMat * viewMat;
+    // copy uniforms
+    wgpuQueueWriteBuffer(queue, uniformBuffer, 0, &uniforms, sizeof(CloudUniforms));
+    wgpuQueueSubmit(queue, 0, nullptr);
+
+    auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
     WGPUSurfaceTexture texture;
     wgpuSurfaceGetCurrentTexture(surface, &texture);
     auto view = wgpuTextureCreateView(texture.texture, nullptr);
 
-    clear(view);
+    clear(view, encoder);
 
+    auto descriptor = WGPU_RENDER_PASS_DESCRIPTOR_INIT;
+    auto attachment = WGPURenderPassDepthStencilAttachment {
+        .nextInChain = nullptr,
+        .view = depthTextureView,
+        .depthLoadOp = WGPULoadOp_Load,
+        .depthStoreOp = WGPUStoreOp_Store,
+        .depthClearValue = 0.0,
+        .depthReadOnly = false,
+        .stencilLoadOp = WGPULoadOp_Clear,
+        .stencilStoreOp = WGPUStoreOp_Store,
+        .stencilClearValue = 0,
+        .stencilReadOnly = false
+    };
+    auto colorAttachment = WGPURenderPassColorAttachment {
+        .nextInChain = nullptr,
+        .view = view,
+        .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+        .resolveTarget = nullptr,
+        .loadOp = WGPULoadOp_Load,
+        .storeOp = WGPUStoreOp_Store,
+        .clearValue = WGPUColor(0, 0, 0, 1)
+    };
+    descriptor.depthStencilAttachment = &attachment;
+    descriptor.colorAttachmentCount = 1;
+    descriptor.colorAttachments = &colorAttachment;
+    auto pointsPass = wgpuCommandEncoderBeginRenderPass(encoder, &descriptor);
+    wgpuRenderPassEncoderSetPipeline(pointsPass, pointsPipeline);
+    wgpuRenderPassEncoderSetBindGroup(pointsPass, 0, bindGroups[0], 0, nullptr);
+    wgpuRenderPassEncoderSetBindGroup(pointsPass, 1, bindGroups[1], 0, nullptr);
+    wgpuRenderPassEncoderSetVertexBuffer(pointsPass, 0, cubeModel, 0, sizeof(float) * 36 * 4);
+    //wgpuRenderPassEncoderDrawIndirect(pointsPass, infoBuffer, 0);
+    wgpuRenderPassEncoderDraw(pointsPass, 36, 1, 0, 0);
+    wgpuRenderPassEncoderEnd(pointsPass);
+
+    auto bundle = wgpuCommandEncoderFinish(encoder, nullptr);
+    wgpuQueueSubmit(queue, 1, &bundle);
 
     wgpuTextureViewRelease(view);
     wgpuSurfacePresent(surface);
@@ -81,10 +161,23 @@ void CloudRenderer::spinOnce() {
     glfwPollEvents();
 }
 
-void CloudRenderer::clear(WGPUTextureView view) {
+void CloudRenderer::resize(WGPUBuffer pointsBuffer) {
+    if (this->bindGroups[1] != nullptr) {
+        wgpuBindGroupRelease(this->bindGroups[1]);
+    }
 
+    auto pointsGroupDesc = WGPU_BIND_GROUP_ENTRY_INIT;
+    pointsGroupDesc.buffer = pointsBuffer;
+    auto bindGroupDesc = WGPU_BIND_GROUP_DESCRIPTOR_INIT;
+    bindGroupDesc.layout = wgpuRenderPipelineGetBindGroupLayout(pointsPipeline, 1);
+    bindGroupDesc.entries = &pointsGroupDesc;
+    bindGroupDesc.entryCount = 1;
 
-    auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
+    bindGroups[1] = wgpuDeviceCreateBindGroup(device, &bindGroupDesc);
+}
+
+void CloudRenderer::clear(WGPUTextureView view, WGPUCommandEncoder encoder) {
+
     auto descriptor = WGPU_RENDER_PASS_DESCRIPTOR_INIT;
     auto attachment = WGPURenderPassDepthStencilAttachment {
         .nextInChain = nullptr,
@@ -113,9 +206,6 @@ void CloudRenderer::clear(WGPUTextureView view) {
 
     auto pass = wgpuCommandEncoderBeginRenderPass(encoder, &descriptor);
     wgpuRenderPassEncoderEnd(pass);
-    auto bundle = wgpuCommandEncoderFinish(encoder, nullptr);
-
-    wgpuQueueSubmit(queue, 1, &bundle);
 }
 
 void CloudRenderer::createPipelines() {

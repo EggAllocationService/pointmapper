@@ -231,6 +231,10 @@ void BackgroundProcessor::recalibrate() {
     wgpuCommandBufferRelease(cmd);
 }
 
+PointmapperDeviceCloud BackgroundProcessor::getOuputBuffer() const {
+    return output;
+}
+
 void BackgroundProcessor::createPipelines() {
 //{ Layout Creation
     // create pipeline layouts manually to support sharing

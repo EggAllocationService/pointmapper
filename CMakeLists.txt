@@ -19,9 +19,7 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/common.cpp
         src/main.cpp
         lib/PointmapperPipeline.cpp
-        lib/PointmapperPipeline.h
-        lib/rendering/CloudRenderer.cpp
-        lib/rendering/CloudRenderer.h)
+        lib/PointmapperPipeline.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -71,6 +69,18 @@ if (VISUALIZATION)
     )
     FetchContent_MakeAvailable(glfw3-webgpu-source)
     target_link_libraries(pointmapper glfw glfw3webgpu)
+
+    target_sources(pointmapper PRIVATE
+            lib/rendering/CloudRenderer.cpp
+            lib/rendering/CloudRenderer.h
+            lib/rendering/cube.h
+            lib/rendering/Matrix.h
+            lib/rendering/Vectors.h
+            lib/rendering/GLMath.h
+            lib/rendering/GLMath.cpp
+            lib/rendering/Transform.cpp
+            lib/rendering/Transform.h
+    )
 endif()
 target_link_libraries(pointmapper webgpu)
 

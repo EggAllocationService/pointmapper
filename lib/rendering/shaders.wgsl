@@ -40,5 +40,5 @@ fn vs(i: Vertex) -> VertexOut {
 
 @fragment
 fn fs(i: VertexOut) -> @location(0) vec4f {
-    return i.color;
+    return vec4f(1, 1, 1, 1);
 }

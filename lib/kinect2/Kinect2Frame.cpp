@@ -22,7 +22,7 @@ const uint32_t * Kinect2Frame::GetColor() {
 }
 
 float Kinect2Frame::GetDepthUnits() {
-    return 1000; // Kinect depth is always in millimeters
+    return 0.001; // Kinect depth is always in millimeters
 }
 
 DepthType Kinect2Frame::GetDepthType() {
