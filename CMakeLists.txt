@@ -17,7 +17,6 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/background/BackgroundProcessor.h
         lib/common.h
         lib/common.cpp
-        src/main.cpp
         lib/PointmapperPipeline.cpp
         lib/PointmapperPipeline.h)
 
@@ -82,9 +81,12 @@ if (VISUALIZATION)
             lib/rendering/Transform.h
     )
 endif()
+
 target_link_libraries(pointmapper webgpu)
 
 add_executable(testpoints src/main.cpp)
 
-target_link_libraries(testpoints pointmapper)
+find_package(PCL REQUIRED)
+
+target_link_libraries(testpoints pointmapper ${PCL_LIBRARIES})
 

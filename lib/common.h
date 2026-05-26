@@ -10,7 +10,10 @@ typedef void* PointmapperDeviceCloud;
 
 struct PointXYZRGB {
     float x, y, z;
-    unsigned char r, g, b;
+    union {
+        unsigned char r, g, b, a;
+        uint32_t color;
+    };
 };
 struct CameraParams {
     float fx, fy, cx, cy;
