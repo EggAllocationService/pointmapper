@@ -20,6 +20,7 @@ struct MaskPushConstants {
 static void handle_buffer_map(WGPUMapAsyncStatus status,
                               WGPUStringView message,
                               void *userdata1, void *userdata2) {
+    //
 }
 
 BackgroundProcessor::BackgroundProcessor(WGPUDevice device, WGPUQueue queue, WGPUBuffer infoBuf) {

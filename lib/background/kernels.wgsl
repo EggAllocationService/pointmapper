@@ -66,6 +66,7 @@ var<immediate> c: MaskPushConstants;
 fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     let idx = (pos.y * info.depth_width) + pos.x;
     var d = depth[idx] * c.scale;
+    depth[idx] = d;
     if d > 4 {
         d = 1000;
     }
@@ -102,12 +103,10 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
     let y = (fpos.y - info.cy) * (d/info.fy);
     let z = d;
 
-    let oIdx = atomicAdd(&outInfo.instanceCount, 1);
+    if d != 0 && d < 4 {
+        let oIdx = atomicAdd(&outInfo.instanceCount, 1);
+        output[oIdx].pos = vec4f(x, y, z, 1);
 
-    output[oIdx].pos = vec4f(x, y, z, 1);
-    if d == 0 || d > 4 {
-        output[oIdx].color = 0;
-    } else {
         let color = textureSampleLevel(colorTex, texSampler, uv, 0.0);
         output[oIdx].color = pack4x8unorm(color.bgra);
     }

@@ -32,7 +32,7 @@ fn vs(i: Vertex) -> VertexOut {
 
     var result: VertexOut;
 
-    result.pos = (uniforms.worldViewMatrix * i.position) + pt.pos;
+    result.pos = uniforms.worldViewMatrix * ((i.position * 0.03) + pt.pos);
     result.color = unpack4x8unorm(pt.color);
 
     return result;
@@ -40,5 +40,5 @@ fn vs(i: Vertex) -> VertexOut {
 
 @fragment
 fn fs(i: VertexOut) -> @location(0) vec4f {
-    return vec4f(1, 1, 1, 1);
+    return i.color;
 }

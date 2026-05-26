@@ -87,11 +87,11 @@ mat4 glengine::math::viewMatrix(mat4 cameraTransformMatrix) {
 }
 
 mat4 glengine::math::perspectiveMatrix(float fov, float aspect, float near, float far) {
-    float A = (1.0 / tanf(fov * 0.5));
-    float B = aspect / tanf(fov * 0.5);
-    float C = (-(far + near)) / (far - near);
+    float A = aspect * (1.0 / tanf(fov * 0.5));
+    float B = 1.0 / tanf(fov * 0.5);
+    float C = far / (far - near);
     float D = 1.0;
-    float E = (2 * far * near) / (far - near);
+    float E = -near * (far / (far - near));
 
     return {
         {

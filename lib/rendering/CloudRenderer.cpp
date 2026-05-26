@@ -104,9 +104,9 @@ void CloudRenderer::spinOnce() {
     }
 
     auto viewMat = glengine::math::viewMatrix(cameraTransform.GetAbsoluteMatrix());
-    auto projMat = glengine::math::perspectiveMatrix(90, 640.f / 480.f, 0.1, 100);
+    auto projMat = glengine::math::perspectiveMatrix(70, 480.f / 640.f, 0.1, 100);
 
-    uniforms.worldProjection = projMat * viewMat;
+    uniforms.worldProjection = viewMat * projMat;
     // copy uniforms
     wgpuQueueWriteBuffer(queue, uniformBuffer, 0, &uniforms, sizeof(CloudUniforms));
     wgpuQueueSubmit(queue, 0, nullptr);
@@ -114,6 +114,9 @@ void CloudRenderer::spinOnce() {
     auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
     WGPUSurfaceTexture texture;
     wgpuSurfaceGetCurrentTexture(surface, &texture);
+    if (texture.status != WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal) {
+        return;
+    }
     auto view = wgpuTextureCreateView(texture.texture, nullptr);
 
     clear(view, encoder);
@@ -148,8 +151,8 @@ void CloudRenderer::spinOnce() {
     wgpuRenderPassEncoderSetBindGroup(pointsPass, 0, bindGroups[0], 0, nullptr);
     wgpuRenderPassEncoderSetBindGroup(pointsPass, 1, bindGroups[1], 0, nullptr);
     wgpuRenderPassEncoderSetVertexBuffer(pointsPass, 0, cubeModel, 0, sizeof(float) * 36 * 4);
-    //wgpuRenderPassEncoderDrawIndirect(pointsPass, infoBuffer, 0);
-    wgpuRenderPassEncoderDraw(pointsPass, 36, 1, 0, 0);
+    wgpuRenderPassEncoderDrawIndirect(pointsPass, infoBuffer, 0);
+    //wgpuRenderPassEncoderDraw(pointsPass, 36, 5, 0, 0);
     wgpuRenderPassEncoderEnd(pointsPass);
 
     auto bundle = wgpuCommandEncoderFinish(encoder, nullptr);
@@ -235,7 +238,7 @@ void CloudRenderer::createPipelines() {
         .nextInChain = nullptr,
         .format = WGPUTextureFormat_Depth24Plus,
         .depthWriteEnabled = WGPUOptionalBool_True,
-        .depthCompare = WGPUCompareFunction_Less,
+        .depthCompare = WGPUCompareFunction_Always,
         .stencilFront = WGPU_STENCIL_FACE_STATE_INIT,
         .stencilBack = WGPU_STENCIL_FACE_STATE_INIT,
         .stencilReadMask = 0,
@@ -266,7 +269,7 @@ void CloudRenderer::createPipelines() {
             .topology = WGPUPrimitiveTopology_TriangleList,
             .stripIndexFormat = WGPUIndexFormat_Undefined,
             .frontFace = WGPUFrontFace_CCW,
-            .cullMode = WGPUCullMode_Back,
+            .cullMode = WGPUCullMode_None,
             .unclippedDepth = false,
         },
         .depthStencil = &depthState,

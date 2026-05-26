@@ -8,8 +8,8 @@
 typedef void* PointmapperDeviceCloud;
 
 
-struct PointXYZRGB {
-    float x, y, z;
+struct alignas(32) PointXYZRGB {
+    float x, y, z, w;
     union {
         unsigned char r, g, b, a;
         uint32_t color;
