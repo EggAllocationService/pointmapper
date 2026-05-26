@@ -18,7 +18,7 @@ const float * Kinect2Frame::GetDepth() {
 }
 
 const uint32_t * Kinect2Frame::GetColor() {
-    return reinterpret_cast<u_int32_t*>(this->map[libfreenect2::Frame::Type::Color]->data);
+    return reinterpret_cast<const uint32_t*>(this->map[libfreenect2::Frame::Type::Color]->data);
 }
 
 float Kinect2Frame::GetDepthUnits() {
