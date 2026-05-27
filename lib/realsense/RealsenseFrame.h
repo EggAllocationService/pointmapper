@@ -22,6 +22,8 @@ public:
 
     void ConvertDepth();
 
+    float4 GetAxisScale() override;
+
     rs2::frameset frames;
 private:
     std::vector<float> converted_depth;

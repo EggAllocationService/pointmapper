@@ -85,6 +85,8 @@ void BackgroundProcessor::processFrame(const std::shared_ptr<Frame>& frame, std:
     wgpuComputePassEncoderSetBindGroup(cloudPass, 2, bindGroups[2], 0, nullptr);
     wgpuComputePassEncoderSetBindGroup(cloudPass, 3, bindGroups[3], 0, nullptr);
     wgpuComputePassEncoderSetPipeline(cloudPass, cloudPipeline);
+    auto scale = frame->GetAxisScale();
+    wgpuComputePassEncoderSetImmediates(cloudPass, 0, sizeof(float4), &scale);
     wgpuComputePassEncoderDispatchWorkgroups(cloudPass, info.width, info.height, 1);
     wgpuComputePassEncoderEnd(cloudPass);
 
@@ -309,7 +311,8 @@ void BackgroundProcessor::createPipelines() {
     pipelineLayoutDesc.immediateSize = sizeof(MaskPushConstants);
     auto maskPipelineLayout = wgpuDeviceCreatePipelineLayout(device, &pipelineLayoutDesc);
 
-    pipelineLayoutDesc.immediateSize = 0;
+    pipelineLayoutDesc.immediateSize = sizeof(float4);
+    extras.immediateDataSize = sizeof(float4);
     pipelineLayoutDesc.bindGroupLayoutCount = 4;
     auto cloudPipelineLayout = wgpuDeviceCreatePipelineLayout(device, &pipelineLayoutDesc);
 

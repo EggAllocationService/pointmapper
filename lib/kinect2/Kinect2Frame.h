@@ -21,6 +21,8 @@ public:
 
     DepthType GetDepthType() override;
 
+    float4 GetAxisScale() override;
+
 private:
     libfreenect2::FrameMap map;
     libfreenect2::SyncMultiFrameListener* listener;

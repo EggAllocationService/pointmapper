@@ -29,4 +29,8 @@ void RealsenseFrame::ConvertDepth() {
     }
 }
 
+float4 RealsenseFrame::GetAxisScale() {
+    return float4(1,1,1,1);
+}
+
 RealsenseFrame::~RealsenseFrame() = default;

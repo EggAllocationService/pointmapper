@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <cstdint>
+#include "./rendering/Vectors.h"
 
 // Opaque pointer for a GPU-side cloud data structure
 typedef void* PointmapperDeviceCloud;
@@ -25,7 +26,6 @@ struct CameraParams {
     float fx, fy, cx, cy;
     int width, height;
     int colorWidth, colorHeight;
-
     ColorType colorType;
 };
 
@@ -45,4 +45,5 @@ public:
 
     virtual float GetDepthUnits() = 0;
     virtual DepthType GetDepthType() = 0;
+    virtual float4 GetAxisScale() = 0;
 };

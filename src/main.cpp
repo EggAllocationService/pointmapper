@@ -30,7 +30,7 @@ void my_terminate_handler() {
 int main() {
     std::set_terminate(my_terminate_handler);
     auto utils = new PointmapperPipeline();
-    auto device = new RealsenseDevice();
+    auto device = new Kinect2Device();
     auto processor = utils->GetBackgroundProcessor();
     auto renderer = utils->GetCloudRenderer();
     utils->resize(device->GetCameraParameters());
@@ -42,6 +42,5 @@ int main() {
         if (frame == nullptr) { continue;}
         processor->processFrame(frame, points);
         renderer->spinOnce();
-
     }
 }

@@ -28,3 +28,7 @@ float Kinect2Frame::GetDepthUnits() {
 DepthType Kinect2Frame::GetDepthType() {
     return DepthType::F32;
 }
+
+float4 Kinect2Frame::GetAxisScale() {
+    return float4(1, -1, 1, 1);
+}
