@@ -112,7 +112,7 @@ void BackgroundProcessor::processFrame(const std::shared_ptr<Frame>& frame, std:
 }
 
 
-void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, int colorH, float fx, float fy, float cx, float cy) {
+void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, int colorH, float fx, float fy, float cx, float cy, ColorType colorType) {
     info.cx = cx;
     info.cy = cy;
     info.fx = fx;
@@ -158,7 +158,7 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
 
     auto colorTexDescriptor = WGPU_TEXTURE_DESCRIPTOR_INIT;
     colorTexDescriptor.dimension = WGPUTextureDimension_2D;
-    colorTexDescriptor.format = WGPUTextureFormat_RGBA8Unorm;
+    colorTexDescriptor.format = colorType == RGBX ? WGPUTextureFormat_RGBA8Unorm : WGPUTextureFormat_BGRA8Unorm;
     colorTexDescriptor.usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
     colorTexDescriptor.size.width = colorW;
     colorTexDescriptor.size.height = colorH;
@@ -220,7 +220,7 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
 
 void BackgroundProcessor::resize(CameraParams params, WGPUBuffer pointBuffer) {
     this->output = pointBuffer;
-    resize(params.width, params.height, params.colorWidth, params.colorHeight, params.fx, params.fy, params.cx, params.cy);
+    resize(params.width, params.height, params.colorWidth, params.colorHeight, params.fx, params.fy, params.cx, params.cy, params.colorType);
 }
 
 void BackgroundProcessor::recalibrate() {

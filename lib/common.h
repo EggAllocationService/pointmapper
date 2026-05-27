@@ -15,16 +15,25 @@ struct alignas(32) PointXYZRGB {
         uint32_t color;
     };
 };
+enum ColorType {
+    RGBX,
+    BGRX,
+};
+
+
 struct CameraParams {
     float fx, fy, cx, cy;
     int width, height;
     int colorWidth, colorHeight;
+
+    ColorType colorType;
 };
 
 enum DepthType {
     Z16,
     F32
 };
+
 
 /// A single frame of color + depth data
 class Frame {

@@ -30,7 +30,8 @@ CameraParams RealsenseDevice::GetCameraParameters() {
         .width = intrinsics.width,
         .height = intrinsics.height,
         .colorWidth = 640,
-        .colorHeight = 480
+        .colorHeight = 480,
+        .colorType = BGRX
     };
 }
 

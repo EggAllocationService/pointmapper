@@ -26,7 +26,7 @@ public:
 
     void processFrame(const std::shared_ptr<Frame>&, std::vector<PointXYZRGB>& pointCloud);
 
-    void resize(int depthWidth, int depthHeight, int colorWidth, int colorHeight, float fx, float fy, float cx, float cy);
+    void resize(int depthWidth, int depthHeight, int colorWidth, int colorHeight, float fx, float fy, float cx, float cy, ColorType colorType);
 
     void resize(CameraParams params, WGPUBuffer pointBuffer);
 

@@ -30,7 +30,8 @@ CameraParams Kinect2Device::GetCameraParameters() {
         .width = 512,
         .height = 424,
         .colorWidth = 1920,
-        .colorHeight = 1080
+        .colorHeight = 1080,
+        .colorType = RGBX
     };
 }
 
