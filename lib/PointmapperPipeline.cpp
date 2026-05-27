@@ -11,6 +11,10 @@ static void handle_request_adapter(WGPURequestAdapterStatus status,
                                    WGPUAdapter adapter, WGPUStringView message,
                                    void *userdata1, void *userdata2) {
     *(WGPUAdapter *)userdata1 = adapter;
+
+    WGPUAdapterInfo info;
+    wgpuAdapterGetInfo(adapter, &info);
+    std::cout << std::string_view(info.device.data, info.device.length) << std::endl;
 }
 static void handle_request_device(WGPURequestDeviceStatus status,
                                   WGPUDevice device, WGPUStringView message,
@@ -47,7 +51,15 @@ PointmapperPipeline::PointmapperPipeline() {
     delete[] adapters;
 
     WGPUAdapter adapter = nullptr;
-    wgpuInstanceRequestAdapter(instance, nullptr,
+    WGPURequestAdapterOptions options = {
+        .nextInChain = nullptr,
+        .featureLevel = WGPUFeatureLevel_Core,
+        .powerPreference = WGPUPowerPreference_HighPerformance,
+        .forceFallbackAdapter = false,
+        .backendType = WGPUBackendType_Undefined,
+        .compatibleSurface = nullptr
+    };
+    wgpuInstanceRequestAdapter(instance, &options,
                            (const WGPURequestAdapterCallbackInfo){
                                .callback = handle_request_adapter,
                                .userdata1 = &adapter
