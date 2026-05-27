@@ -28,10 +28,10 @@ static void handle_request_device(WGPURequestDeviceStatus status,
     }
 }
 
-#define QUEUE static_cast<WGPUQueue>(this->queue)
-#define DEVICE static_cast<WGPUDevice>(this->device)
-#define POINT_BUFFER static_cast<WGPUBuffer>(this->pointBuffer)
-#define INFO_BUFFER static_cast<WGPUBuffer>(this->infoBuffer)
+#define QUEUE reinterpret_cast<WGPUQueue>(this->queue)
+#define DEVICE reinterpret_cast<WGPUDevice>(this->device)
+#define POINT_BUFFER reinterpret_cast<WGPUBuffer>(this->pointBuffer)
+#define INFO_BUFFER reinterpret_cast<WGPUBuffer>(this->infoBuffer)
 
 PointmapperPipeline::PointmapperPipeline() {
     auto instance = wgpuCreateInstance(nullptr);
