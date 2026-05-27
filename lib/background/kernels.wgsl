@@ -114,6 +114,6 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
         output[oIdx].pos = vec4f(x, y, z, 1) * cc.scalar;
 
         let color = textureSampleLevel(colorTex, texSampler, uv, 0.0);
-        output[oIdx].color = pack4x8unorm(color.bgra);
+        output[oIdx].color = pack4x8unorm(color);
     }
 }
