@@ -4,8 +4,6 @@
 
 
 #include <iostream>
-
-#include "../lib/background/BackgroundProcessor.h"
 #include "../lib/realsense/RealsenseDevice.h"
 
 #include <exception>
@@ -16,6 +14,7 @@
 #include <pcl/visualization/cloud_viewer.h>
 
 #include "Engine.h"
+#include "TestActor.h"
 #include "../lib/kinect2/Kinect2Device.h"
 #include "../lib/rendering/pipelines.h"
 
@@ -33,7 +32,16 @@ void my_terminate_handler() {
 int main() {
     std::set_terminate(my_terminate_handler);
     auto engine = new glengine::Engine("Pointmapper Demo", int2(1280, 720));
+    engine->SetAllowNonFocusedPawnInput(true);
     addPointmapperPipelines(engine->GetRenderer());
+
+    auto kinect = engine->SpawnActor<TestActor>();
+    kinect->GetTransform()->SetPosition({-8, 0, 5});
+    kinect->SetDevice(new Kinect2Device());
+
+    auto realsense = engine->SpawnActor<TestActor>();
+    realsense->GetTransform()->SetPosition({8, 0, 5});
+    realsense->SetDevice(new RealsenseDevice());
 
     engine->MainLoop();
 }

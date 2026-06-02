@@ -60,10 +60,9 @@ if (VISUALIZATION)
     include(FetchContent)
     FetchContent_Declare(glengine-src
         GIT_REPOSITORY https://github.com/EggAllocationService/GLEngine.git
-        GIT_TAG d5e9bd4bf00ab243df26c057598351abe72fec41
+        GIT_TAG bcfe35f
     )
     FetchContent_MakeAvailable(glengine-src)
-
 
     create_resource_library(NAME PointResources SOURCES
         lib/rendering/kernels.wgsl
@@ -83,7 +82,9 @@ else()
     target_link_libraries(pointmapper webgpu)
 endif()
 
-add_executable(testpoints src/main.cpp)
+add_executable(testpoints src/main.cpp
+        src/TestActor.cpp
+        src/TestActor.h)
 
 find_package(PCL REQUIRED)
 

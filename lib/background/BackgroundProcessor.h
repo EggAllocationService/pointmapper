@@ -7,7 +7,7 @@
 
 #include "../common.h"
 
-struct PipelineInfo {
+struct BackgroundProcessorPipelineInfo {
     float fx;
     float fy;
     float cx;
@@ -64,5 +64,5 @@ private:
 
     WGPUBindGroup bindGroups[4];
 
-    PipelineInfo info;
+    BackgroundProcessorPipelineInfo info;
 };

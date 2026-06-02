@@ -149,9 +149,9 @@ void BackgroundProcessor::resize(int depthWidth, int depthHeight, int colorW, in
 
     auto uniformBufferDescriptor = WGPU_BUFFER_DESCRIPTOR_INIT;
     uniformBufferDescriptor.usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst;
-    uniformBufferDescriptor.size = sizeof(PipelineInfo);
+    uniformBufferDescriptor.size = sizeof(BackgroundProcessorPipelineInfo);
     this->uniforms = wgpuDeviceCreateBuffer(device, &uniformBufferDescriptor);
-    wgpuQueueWriteBuffer(queue, uniforms, 0, &info, sizeof(PipelineInfo)); // begin upload immediately
+    wgpuQueueWriteBuffer(queue, uniforms, 0, &info, sizeof(BackgroundProcessorPipelineInfo)); // begin upload immediately
 
     auto outputBufferDescriptor = WGPU_BUFFER_DESCRIPTOR_INIT;
     outputBufferDescriptor.size = sizeof(PointXYZRGB) * depthHeight * depthWidth;
@@ -246,7 +246,7 @@ void BackgroundProcessor::createPipelines() {
     auto groupLayouts = new WGPUBindGroupLayoutDescriptor[4];
     auto group0Bindings = new WGPUBindGroupLayoutEntry[2] { WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT, WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT };
     group0Bindings[0].buffer.type = WGPUBufferBindingType_Uniform;
-    group0Bindings[0].buffer.minBindingSize = sizeof(PipelineInfo);
+    group0Bindings[0].buffer.minBindingSize = sizeof(BackgroundProcessorPipelineInfo);
     group0Bindings[0].visibility = WGPUShaderStage_Compute;
 
     group0Bindings[1].buffer.type = WGPUBufferBindingType_Storage;
