@@ -3,7 +3,6 @@
 //
 #pragma once
 #include "background/BackgroundProcessor.h"
-#include "rendering/CloudRenderer.h"
 
 /// Allows related objects to share GPU-side resources
 class PointmapperPipeline {
@@ -13,7 +12,6 @@ public:
     ~PointmapperPipeline();
 
     std::shared_ptr<BackgroundProcessor> GetBackgroundProcessor();
-    std::shared_ptr<CloudRenderer> GetCloudRenderer();
 
     void resize(CameraParams params);
 
@@ -25,5 +23,4 @@ private:
     void* infoBuffer;
 
     std::shared_ptr<BackgroundProcessor> backgroundProcessor;
-    std::shared_ptr<CloudRenderer> cloudRenderer;
 };

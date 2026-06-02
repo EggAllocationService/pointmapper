@@ -14,7 +14,10 @@
 
 #include "../lib/PointmapperPipeline.h"
 #include <pcl/visualization/cloud_viewer.h>
+
+#include "Engine.h"
 #include "../lib/kinect2/Kinect2Device.h"
+#include "../lib/rendering/pipelines.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -29,18 +32,8 @@ void my_terminate_handler() {
 
 int main() {
     std::set_terminate(my_terminate_handler);
-    auto utils = new PointmapperPipeline();
-    auto device = new Kinect2Device();
-    auto processor = utils->GetBackgroundProcessor();
-    auto renderer = utils->GetCloudRenderer();
-    utils->resize(device->GetCameraParameters());
+    auto engine = new glengine::Engine("Pointmapper Demo", int2(1280, 720));
+    addPointmapperPipelines(engine->GetRenderer());
 
-    std::vector<PointXYZRGB> points;
-
-    while (true) {
-        auto frame = device->GetNextFrame();
-        if (frame == nullptr) { continue;}
-        processor->processFrame(frame, points);
-        renderer->spinOnce();
-    }
+    engine->MainLoop();
 }

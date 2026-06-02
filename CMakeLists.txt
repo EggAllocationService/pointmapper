@@ -18,7 +18,11 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/common.h
         lib/common.cpp
         lib/PointmapperPipeline.cpp
-        lib/PointmapperPipeline.h)
+        lib/PointmapperPipeline.h
+        lib/rendering/PointCloudComponent.cpp
+        lib/rendering/PointCloudComponent.h
+        lib/rendering/pipelines.cpp
+        lib/rendering/pipelines.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -51,38 +55,33 @@ if (OAK_SUPPORT)
     target_link_libraries(pointmapper depthai::core)
 endif()
 
-provide_wgpu_native("29.0.0.0")
 
 if (VISUALIZATION)
     include(FetchContent)
-    set(GLFW_LIBRARY_TYPE "STATIC")
-    FetchContent_Declare(glfw3-source
-        GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG 3.4
+    FetchContent_Declare(glengine-src
+        GIT_REPOSITORY https://github.com/EggAllocationService/GLEngine.git
+        GIT_TAG d5e9bd4bf00ab243df26c057598351abe72fec41
     )
-    FetchContent_MakeAvailable(glfw3-source)
+    FetchContent_MakeAvailable(glengine-src)
 
-    FetchContent_Declare(glfw3-webgpu-source
-        GIT_REPOSITORY https://github.com/eliemichel/glfw3webgpu.git
-        GIT_TAG main
+
+    create_resource_library(NAME PointResources SOURCES
+        lib/rendering/kernels.wgsl
+        lib/rendering/shaders.wgsl
     )
-    FetchContent_MakeAvailable(glfw3-webgpu-source)
-    target_link_libraries(pointmapper glfw glfw3webgpu)
 
     target_sources(pointmapper PRIVATE
-            lib/rendering/CloudRenderer.cpp
-            lib/rendering/CloudRenderer.h
-            lib/rendering/cube.h
-            lib/rendering/Matrix.h
-            lib/rendering/Vectors.h
-            lib/rendering/GLMath.h
-            lib/rendering/GLMath.cpp
-            lib/rendering/Transform.cpp
-            lib/rendering/Transform.h
+            lib/rendering/PointCloudComponent.cpp
+            lib/rendering/PointCloudComponent.h
+            lib/rendering/pipelines.cpp
+            lib/rendering/pipelines.h
     )
+    target_link_libraries(pointmapper glengine PointResources)
+    target_include_directories(pointmapper PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+else()
+    provide_wgpu_native("29.0.0.0")
+    target_link_libraries(pointmapper webgpu)
 endif()
-
-target_link_libraries(pointmapper webgpu)
 
 add_executable(testpoints src/main.cpp)
 

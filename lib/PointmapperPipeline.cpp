@@ -105,7 +105,6 @@ PointmapperPipeline::PointmapperPipeline() {
     wgpuQueueWriteBuffer(QUEUE, INFO_BUFFER, 0, &vertexCount, sizeof(uint32_t));
 
     backgroundProcessor = std::make_shared<BackgroundProcessor>(DEVICE, QUEUE, INFO_BUFFER);
-    cloudRenderer = std::make_shared<CloudRenderer>(backgroundProcessor, instance, adapter, DEVICE, INFO_BUFFER);
 }
 
 PointmapperPipeline::~PointmapperPipeline() {
@@ -115,10 +114,6 @@ PointmapperPipeline::~PointmapperPipeline() {
 
 std::shared_ptr<BackgroundProcessor> PointmapperPipeline::GetBackgroundProcessor() {
     return backgroundProcessor;
-}
-
-std::shared_ptr<CloudRenderer> PointmapperPipeline::GetCloudRenderer() {
-    return cloudRenderer;
 }
 
 void PointmapperPipeline::resize(CameraParams params) {
@@ -132,5 +127,4 @@ void PointmapperPipeline::resize(CameraParams params) {
     this->pointBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
 
     backgroundProcessor->resize(params, POINT_BUFFER);
-    cloudRenderer->resize(POINT_BUFFER);
 }

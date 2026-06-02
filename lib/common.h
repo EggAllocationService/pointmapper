@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <cstdint>
-#include "./rendering/Vectors.h"
+#include "Vectors.h"
 
 // Opaque pointer for a GPU-side cloud data structure
 typedef void* PointmapperDeviceCloud;
