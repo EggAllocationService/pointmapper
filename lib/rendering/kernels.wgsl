@@ -89,6 +89,13 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
 }
 
 
+@group(3)
+@binding(0)
+var texSampler: sampler;
+@group(3)
+@binding(1)
+var colorTex: texture_2d<f32>;
+
 var<immediate> cc: CloudPushConstants;
 @compute @workgroup_size(1)
 fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
@@ -106,7 +113,7 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
         let oIdx = atomicAdd(&outInfo.instanceCount, 1);
         output[oIdx].pos = vec4f(x, y, z, 1) * cc.scalar;
 
-        //let color = textureSampleLevel(colorTex, texSampler, uv, 0.0);
-        output[oIdx].color = pack4x8unorm(vec4f(1, 1, 1, 1));
+        let color = textureSampleLevel(colorTex, texSampler, uv, 0.0);
+        output[oIdx].color = pack4x8unorm(color);
     }
 }

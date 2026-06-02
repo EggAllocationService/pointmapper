@@ -5,7 +5,7 @@
 #include "PointCloudComponent.h"
 
 #include "Engine.h"
-#include "../../cmake-build-release/_deps/glengine-src-src/include/3d/mesh/StaticMesh.h"
+#include "3d/mesh/StaticMesh.h"
 
 #define SPIN_IF(cond) if(cond) {std::this_thread::sleep_for(std::chrono::milliseconds(10)); continue;}
 
@@ -55,6 +55,11 @@ PointCloudComponent::PointCloudComponent() {
 
     mesh = GetEngine()->GetResourceManager()->GetResource<glengine::world::mesh::StaticMesh>("/Users/kyle/CLionProjects/GLEngine/test3d/assets/cube-tex.obj")->mesh;
     readingThread = std::thread(::readingThread, this);
+
+    WGPUBindGroupEntry sampler = WGPU_BIND_GROUP_ENTRY_INIT;
+    sampler.sampler = wgpuDeviceCreateSampler(GetEngine()->GetRenderer()->GetDevice(), nullptr);
+
+    cloudPipeline->SetBinding(3, sampler);
 }
 
 void PointCloudComponent::Update(double deltaTime) {
@@ -68,8 +73,23 @@ void PointCloudComponent::Update(double deltaTime) {
     indirectParams->numInstances = 0;
 
     auto renderer = GetEngine()->GetRenderer();
-    auto session = renderer->GetTransferManager()->CreateSession("Point cloud data transfer", 0);
+    auto queue = wgpuDeviceGetQueue(renderer->GetDevice());
+    auto copyInfo = WGPUTexelCopyTextureInfo {
+        .texture = *colorTexture,
+        .mipLevel = 0,
+        .origin = {.x = 0, .y = 0, .z = 0},
+        .aspect = WGPUTextureAspect_All
+    };
+    auto copyBufLayout = WGPUTexelCopyBufferLayout {
+        .offset = 0,
+        .bytesPerRow = 4 * p.colorWidth,
+        .rowsPerImage = p.colorHeight,
+    };
 
+    auto extent = WGPUExtent3D {p.colorWidth, p.colorHeight, 1};
+    wgpuQueueWriteTexture(queue, &copyInfo, frame->GetColor(), p.colorWidth * p.colorHeight * 4, &copyBufLayout, &extent);
+
+    auto session = renderer->GetTransferManager()->CreateSession("Point cloud data transfer", 0);
     indirectParams.Commit(*session);
     session->Transfer(depthBuffer, 0, frame->GetDepth(), sizeof(float) * p.width * p.height);
     session->Commit(); // submit all uploads
@@ -97,6 +117,14 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
 
     auto params = dev->GetCameraParameters();
     auto renderer = GetEngine()->GetRenderer();
+    colorTexture = renderer->CreateTexture(
+        "Camera color data",
+        WGPUTextureUsage_CopyDst | WGPUTextureUsage_TextureBinding,
+        params.colorType == RGBX ? WGPUTextureFormat_RGBA8Unorm : WGPUTextureFormat_BGRA8Unorm,
+        params.colorWidth,
+        params.colorHeight
+    );
+
     depthBuffer = renderer->CreateRawBuffer("Camera depth data", WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst, params.width * params.height * sizeof(float));
     pointsBuffer = renderer->CreateRawBuffer("Point cloud data", WGPUBufferUsage_Storage, params.width * params.height * sizeof(PointXYZRGB));
     previousDepthBuffer = renderer->CreateRawBuffer("Previous depth", WGPUBufferUsage_Storage, params.width * params.height * sizeof(float));
@@ -106,7 +134,7 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
     pipelineInfo->cy = params.cy;
     pipelineInfo->colorHeight = params.colorHeight;
     pipelineInfo->colorWidth = params.colorWidth;
-    pipelineInfo->depth_tolerance = 0.01;
+    pipelineInfo->depth_tolerance = 0.5;
     pipelineInfo->fx = params.fx;
     pipelineInfo->fy = params.fy;
     pipelineInfo->height = params.height;
@@ -132,10 +160,15 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
     maskPipeline->SetBinding(2, prevDepthEntry);
     maskPipeline->CommitBindings();
 
+    WGPUBindGroupEntry colorEntry = WGPU_BIND_GROUP_ENTRY_INIT;
+    colorEntry.binding = 1;
+    colorEntry.textureView = *colorTexture;
+
     cloudPipeline->SetBinding(1, depthEntry);
     cloudPipeline->SetBinding(1, pointsEntry);
     cloudPipeline->SetBinding(2, maxDepthEntry);
     cloudPipeline->SetBinding(2, prevDepthEntry);
+    cloudPipeline->SetBinding(3, colorEntry);
     cloudPipeline->CommitBindings();
 
     pointsEntry.binding = 0;

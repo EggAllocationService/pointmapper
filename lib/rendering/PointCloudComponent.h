@@ -48,6 +48,8 @@ private:
     std::shared_ptr<glengine::pipeline::wgpu::ComputePipeline> cloudPipeline;
     std::shared_ptr<glengine::pipeline::wgpu::RenderPipeline> cloudRenderer;
 
+    std::shared_ptr<glengine::pipeline::wgpu::GPUTexture> colorTexture;
+
     glengine::pipeline::wgpu::WrappedBuffer depthBuffer;
     glengine::pipeline::wgpu::WrappedBuffer pointsBuffer;
     glengine::pipeline::wgpu::WrappedBuffer maxDepthBuffer;
