@@ -27,6 +27,10 @@ struct PipelineInfo {
     float depth_tolerance;
 };
 
+struct RegistrationInfo {
+    mat4 transform;
+};
+
 class PointCloudComponent : public glengine::world::ActorSceneComponent {
 public:
     PointCloudComponent();
@@ -56,6 +60,7 @@ private:
     glengine::pipeline::wgpu::WrappedBuffer previousDepthBuffer;
     glengine::pipeline::wgpu::GPUPointer<IndirectRenderParams> indirectParams;
     glengine::pipeline::wgpu::GPUPointer<PipelineInfo> pipelineInfo;
+    glengine::pipeline::wgpu::GPUPointer<RegistrationInfo> registrationInfo;
 
     std::shared_ptr<glengine::pipeline::wgpu::GPUMesh> mesh;
     std::thread readingThread;

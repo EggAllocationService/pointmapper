@@ -29,6 +29,10 @@ struct ModelData {
     m: mat4x4<f32>
 }
 
+struct RegistrationData {
+    m: mat4x4<f32>
+}
+
 @group(0)
 @binding(0)
 var<uniform> uniforms: RenderUniforms;
@@ -36,6 +40,10 @@ var<uniform> uniforms: RenderUniforms;
 @group(1)
 @binding(0)
 var<storage, read> points: array<Point>;
+
+@group(1)
+@binding(1)
+var<uniform> registration: RegistrationData;
 
 var<immediate> m: ModelData;
 
@@ -46,7 +54,7 @@ fn vs(i: Vertex) -> VertexOut {
 
     var result: VertexOut;
 
-    result.pos = uniforms.projectionViewMatrix * m.m * ((i.position * 0.003) + pt.pos);
+    result.pos = uniforms.projectionViewMatrix * m.m * ((i.position * 0.003) + (registration.m * pt.pos));
     result.color = unpack4x8unorm(pt.color);
 
     return result;

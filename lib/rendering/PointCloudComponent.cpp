@@ -31,6 +31,7 @@ PointCloudComponent::PointCloudComponent() {
     FrameWaiting = false;
     indirectParams = GetEngine()->GetRenderer()->AllocateObject<IndirectRenderParams>(WGPUBufferUsage_Storage | WGPUBufferUsage_Indirect);
     pipelineInfo = GetEngine()->GetRenderer()->AllocateObject<PipelineInfo>(WGPUBufferUsage_Uniform);
+    registrationInfo = GetEngine()->GetRenderer()->AllocateObject<RegistrationInfo>(WGPUBufferUsage_Uniform);
 
     maskPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("mask")->CreateInstance();
     cloudPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("cloud")->CreateInstance();
@@ -172,6 +173,11 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
     cloudPipeline->CommitBindings();
 
     pointsEntry.binding = 0;
+
+    WGPUBindGroupEntry regEntry = WGPU_BIND_GROUP_ENTRY_INIT;
+    regEntry.binding = 1;
+    regEntry.buffer = registrationInfo;
     cloudRenderer->SetBinding(1, pointsEntry);
+    cloudRenderer->SetBinding(1, regEntry);
     cloudRenderer->CommitBindings();
 }
