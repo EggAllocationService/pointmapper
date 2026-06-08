@@ -22,12 +22,14 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/rendering/PointCloudComponent.cpp
         lib/rendering/PointCloudComponent.h
         lib/rendering/pipelines.cpp
-        lib/rendering/pipelines.h)
+        lib/rendering/pipelines.h
+        lib/registration/registration.cpp
+        lib/registration/registration.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
 
-    target_link_libraries(pointmapper realsense2::realsense2)
+    target_link_libraries(pointmapper PRIVATE realsense2::realsense2)
     target_sources(pointmapper
             PRIVATE
             lib/realsense/RealsenseFrame.cpp
@@ -40,7 +42,7 @@ if (KINECT2_SUPPORT)
     find_package(freenect2 REQUIRED)
 
     target_include_directories(pointmapper PRIVATE ${freenect2_INCLUDE_DIRS})
-    target_link_libraries(pointmapper ${freenect2_LIBRARIES})
+    target_link_libraries(pointmapper PRIVATE ${freenect2_LIBRARIES})
 
     target_sources(pointmapper
             PRIVATE
@@ -75,7 +77,7 @@ if (VISUALIZATION)
             lib/rendering/pipelines.cpp
             lib/rendering/pipelines.h
     )
-    target_link_libraries(pointmapper glengine PointResources)
+    target_link_libraries(pointmapper PUBLIC glengine PointResources)
     target_include_directories(pointmapper PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 else()
     provide_wgpu_native("29.0.0.0")
@@ -87,6 +89,10 @@ add_executable(testpoints src/main.cpp
         src/TestActor.h)
 
 find_package(PCL REQUIRED)
+find_package(Eigen3 REQUIRED)
 
-target_link_libraries(testpoints pointmapper ${PCL_LIBRARIES})
+target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${PCL_LIBRARIES})
+target_include_directories(pointmapper PUBLIC ${PCL_INCLUDE_DIRS})
+
+target_link_libraries(testpoints PUBLIC pointmapper)
 
