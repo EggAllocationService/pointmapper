@@ -52,6 +52,7 @@ public:
 private:
     std::shared_ptr<glengine::pipeline::wgpu::ComputePipeline> maskPipeline;
     std::shared_ptr<glengine::pipeline::wgpu::ComputePipeline> cloudPipeline;
+    std::shared_ptr<glengine::pipeline::wgpu::ComputePipeline> blobPipeline;
     std::shared_ptr<glengine::pipeline::wgpu::RenderPipeline> cloudRenderer;
 
     std::shared_ptr<glengine::pipeline::wgpu::GPUTexture> colorTexture;

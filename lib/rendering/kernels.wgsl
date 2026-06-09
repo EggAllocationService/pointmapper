@@ -59,10 +59,17 @@ var<storage, read_write> prev_depth: array<f32>;
 
 var<immediate> c: MaskPushConstants;
 
-@compute @workgroup_size(1)
+@compute @workgroup_size(8, 8)
 fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
+    if (pos.x > info.depth_width || pos.y > info.depth_height) {
+        return;
+    }
+
     let idx = (pos.y * info.depth_width) + pos.x;
     var d = depth[idx] * c.scale;
+    if d < 0 {
+        d = 0;
+    }
     if (prev_depth[idx] == 0) {
         depth[idx] = d;
         prev_depth[idx] = d;
@@ -70,7 +77,7 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
         prev_depth[idx] = 0;
         depth[idx] = 0;
     } else {
-        let filtered = (prev_depth[idx] * 0.9) + (d * 0.1);
+        var filtered = (prev_depth[idx] * 0.7) + (d * 0.3);
 
         prev_depth[idx] = filtered;
 
@@ -78,7 +85,7 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
         d = filtered;
     }
 
-    max_depth[idx] = max(max_depth[idx], d);
+   max_depth[idx] = max(max_depth[idx], d);
 
     let delta = abs(max_depth[idx] - d);
 
@@ -97,8 +104,11 @@ var texSampler: sampler;
 var colorTex: texture_2d<f32>;
 
 var<immediate> cc: CloudPushConstants;
-@compute @workgroup_size(1)
+@compute @workgroup_size(8, 8)
 fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
+    if (pos.x > info.depth_width || pos.y > info.depth_height) {
+        return;
+    }
 
     let uv = vec2f(pos.xy) / vec2f(f32(info.depth_width), f32(info.depth_height));
     let idx = (pos.y * info.depth_width) + pos.x;
@@ -116,4 +126,42 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
         let color = textureSampleLevel(colorTex, texSampler, uv, 0.0);
         output[oIdx].color = pack4x8unorm(color);
     }
+}
+struct WorkgroupInfo {
+    edges: atomic<u32>,
+    min: atomic<u32>,
+    max: atomic<u32>
+}
+var<workgroup> wg: WorkgroupInfo;
+
+@compute @workgroup_size(8, 8)
+fn remove_blobs(@builtin(global_invocation_id) pos: vec3<u32>, @builtin(local_invocation_id) wgPos: vec3<u32>) {
+    if (wgPos.x == 0 && wgPos.y == 0) {
+        wg.max = 1;
+    }
+    let idx = (pos.y * info.depth_width) + pos.x;
+
+    if (wgPos.x == 0 || wgPos.y == 0 || wgPos.x == 7 || wgPos.y == 7) {
+        if (depth[idx] != 0) {
+            atomicAdd(&wg.edges, 1);
+            atomicMin(&wg.min, u32(depth[idx] * 1000));
+            atomicMax(&wg.max, u32(depth[idx] * 1000));
+        }
+    }
+
+    workgroupBarrier();
+    if wg.edges < 8 {
+        depth[idx] = 0;
+    } else if wg.edges < 16 && depth[idx] != 0 {
+        let min = f32(wg.min) / 1000.0;
+        let max = f32(wg.max) / 1000.0;
+
+        let norm = (depth[idx] - min) / (max - min);
+
+        // if there's less than 50% valid pixels along the edge, erase the whole workgroup
+        if (norm < 0.7 && norm > 0.3) {
+            depth[idx] = max;
+        }
+    }
+
 }

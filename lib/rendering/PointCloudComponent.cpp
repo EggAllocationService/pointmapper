@@ -38,6 +38,7 @@ PointCloudComponent::PointCloudComponent() {
 
     maskPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("mask")->CreateInstance();
     cloudPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("cloud")->CreateInstance();
+    blobPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("remove_blobs")->CreateInstance();
 
     cloudRenderer = GetEngine()->GetRenderer()->GetRenderPipelineByName("cloud")->CreateInstance();
 
@@ -53,6 +54,8 @@ PointCloudComponent::PointCloudComponent() {
 
     cloudPipeline->SetBinding(0, indirectEntry);
     cloudPipeline->SetBinding(0, piplineInfoEntry);
+
+    blobPipeline->SetBinding(0, piplineInfoEntry);
 
     maskPipeline->CommitBindings();
     cloudPipeline->CommitBindings();
@@ -102,8 +105,9 @@ void PointCloudComponent::Update(double deltaTime) {
     auto bundle = renderer->BeginComputePass();
     float scale = frame->GetDepthUnits();
     auto axisScalar = frame->GetAxisScale();
-    maskPipeline->DispatchWorkgroups(bundle, p.width, p.height, 1, &scale);
-    cloudPipeline->DispatchWorkgroups(bundle, p.width, p.height, 1, &axisScalar);
+    maskPipeline->DispatchWorkgroups(bundle, p.width / 8, p.height / 8, 1, &scale);
+    blobPipeline->DispatchWorkgroups(bundle, p.width / 8, p.height / 8, 1, nullptr);
+    cloudPipeline->DispatchWorkgroups(bundle, p.width / 8, p.height / 8, 1, &axisScalar);
     renderer->CommitComputePass(bundle);
 
     FrameWaiting = false;
@@ -174,6 +178,9 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
     cloudPipeline->SetBinding(2, prevDepthEntry);
     cloudPipeline->SetBinding(3, colorEntry);
     cloudPipeline->CommitBindings();
+
+    blobPipeline->SetBinding(1, depthEntry);
+    blobPipeline->CommitBindings();
 
     pointsEntry.binding = 0;
 

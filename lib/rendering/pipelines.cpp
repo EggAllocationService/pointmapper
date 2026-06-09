@@ -58,8 +58,12 @@ void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {
     groupLayouts[3].entryCount = 2;
 
     renderer->BuildComputePipeline("mask", kernels, "mask", std::span(groupLayouts, 3), sizeof(float));
+
     renderer->BuildComputePipeline("cloud", kernels, "create_cloud", std::span(groupLayouts, 4), sizeof(float4));
 
+    groupLayouts[1].entryCount = 1;
+    groupLayouts[0].entryCount = 1;
+    renderer->BuildComputePipeline("remove_blobs", kernels, "remove_blobs", std::span(groupLayouts, 2), 0);
 
     WGPUBindGroupLayoutEntry renderEntries[2] = {WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT, WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT};
     renderEntries[0].buffer = {

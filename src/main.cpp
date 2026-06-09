@@ -31,8 +31,8 @@ void my_terminate_handler() {
 }
 
 int main() {
-    auto kDev = new Kinect2Device();
-    auto rDev = new RealsenseDevice();
+    //auto kDev = new Kinect2Device();
+    //auto rDev = new RealsenseDevice();
 
     //auto transform = registerDevices(rDev, kDev);
 
@@ -54,9 +54,9 @@ int main() {
     kinect->GetTransform()->SetPosition({-8, 0, 5});
     kinect->SetDevice(new Kinect2Device());
 
-    auto realsense = engine->SpawnActor<TestActor>();
-    realsense->GetTransform()->SetPosition({8, 0, 5});
-    realsense->SetDevice(rDev);
+    //auto realsense = engine->SpawnActor<TestActor>();
+    //realsense->GetTransform()->SetPosition({8, 0, 5});
+    //realsense->SetDevice(rDev);
     //realsense->SetRegistration(transform);
 
     engine->MainLoop();
