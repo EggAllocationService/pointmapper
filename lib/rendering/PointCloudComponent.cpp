@@ -33,6 +33,9 @@ PointCloudComponent::PointCloudComponent() {
     pipelineInfo = GetEngine()->GetRenderer()->AllocateObject<PipelineInfo>(WGPUBufferUsage_Uniform);
     registrationInfo = GetEngine()->GetRenderer()->AllocateObject<RegistrationInfo>(WGPUBufferUsage_Uniform);
 
+    registrationInfo->transform = mat4::identity();
+    registrationInfo.Commit();
+
     maskPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("mask")->CreateInstance();
     cloudPipeline = GetEngine()->GetRenderer()->GetComputePipelineByName("cloud")->CreateInstance();
 
@@ -180,4 +183,9 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
     cloudRenderer->SetBinding(1, pointsEntry);
     cloudRenderer->SetBinding(1, regEntry);
     cloudRenderer->CommitBindings();
+}
+
+void PointCloudComponent::SetRegistration(mat4 transform) {
+    registrationInfo->transform = transform;
+    registrationInfo.Commit();
 }

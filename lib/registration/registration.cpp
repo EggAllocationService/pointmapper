@@ -5,8 +5,10 @@
 #include "registration.h"
 
 #include <pcl-1.15/pcl/point_cloud.h>
+#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl-1.15/pcl/impl/point_types.hpp>
-#include <pcl-1.15/pcl/registration/icp.h>
+#include <pcl-1.15/pcl/registration/ia_ransac.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 
 std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> getCloud(Frame& frame, CameraParams& params) {
@@ -14,15 +16,18 @@ std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> getCloud(Frame& frame, CameraPar
     cloud->reserve(params.width * params.height);
     auto depth = frame.GetDepth();
     auto units = frame.GetDepthUnits();
+    auto scale = frame.GetAxisScale();
+
+
     for (int y = 0; y < params.height; y++) {
         for (int x = 0; x < params.width; x++) {
             int idx = (y * params.width) + x;
             pcl::PointXYZ point;
 
             float d = depth[idx] * units;
-            point.x = (x - params.cx) * (d/params.fx);
-            point.y = (y - params.cy) * (d/params.fy);
-            point.z = d;
+            point.x = (x - params.cx) * (d/params.fx) * scale.x;
+            point.y = (y - params.cy) * (d/params.fy) * scale.y;
+            point.z = d * scale.z;
             cloud->push_back(point);
         }
     }
@@ -31,27 +36,56 @@ std::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> getCloud(Frame& frame, CameraPar
 }
 
 mat4 registerDevices(DepthDevice *source, DepthDevice *target) {
+    for (int i = 0; i < 10; i++) {
+        source->GetNextFrame();
+        target->GetNextFrame();
+    }
+
     auto srcFrame = source->GetNextFrame();
     auto targetFrame = target->GetNextFrame();
-
     auto srcParams = source->GetCameraParameters();
     auto targetParams = target->GetCameraParameters();
 
-    auto srcCloud = getCloud(*srcFrame, srcParams);
-    auto targetCloud = getCloud(*targetFrame, targetParams);
+    auto dstFiltered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    auto srcFiltered = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    {
+        auto srcCloud = getCloud(*srcFrame, srcParams);
+        auto dstCloud = getCloud(*targetFrame, targetParams);
+        printf("Filtering src cloud");
+        {
+            pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+            sor.setInputCloud(srcCloud);
+            sor.setMeanK(50);
+            sor.setStddevMulThresh(1.0);
+            sor.filter(*srcFiltered);
+        }
 
-    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+        printf("filtering dst cloud");
+        {
+            pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+            sor.setInputCloud(dstCloud);
+            sor.setMeanK(50);
+            sor.setStddevMulThresh(1.0);
+            sor.filter(*dstFiltered);
+        }
+    }
 
-    icp.setInputSource(srcCloud);
-    icp.setInputTarget(targetCloud);
+    pcl::visualization::PCLVisualizer viewer ("Simple Cloud Viewer");
+    viewer.setBackgroundColor(0, 0, 0);
+    viewer.initCameraParameters();
 
-    auto result = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    viewer.addPointCloud(dstFiltered, "target");
+    viewer.addPointCloud(srcFiltered, "src");
 
-    pcl::PointCloud<pcl::PointXYZ> points;
+    viewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_COLOR, 1, 0, 0, "result");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_COLOR, 0, 0, 1, "target");
+    viewer.setPointCloudRenderingProperties(pcl::visualization::RenderingProperties::PCL_VISUALIZER_COLOR, 0, 1, 0, "src");
 
-    icp.align(points);
 
-    auto transform = icp.getFinalTransformation();
 
-    return *reinterpret_cast<mat4*>(&transform);
+    while (!viewer.wasStopped()) {
+        viewer.spinOnce();
+    }
+
+    return mat4::identity();
 }

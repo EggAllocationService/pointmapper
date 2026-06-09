@@ -12,7 +12,9 @@ public:
     TestActor();
     void SetDevice(DepthDevice *dev);
     void Update(double deltaTime) override;
-
+    void SetRegistration(mat4 r) {
+        pc_->SetRegistration(r);
+    }
 private:
     std::shared_ptr<glengine::world::font::SlugTextComponent> text_;
     std::shared_ptr<PointCloudComponent> pc_;

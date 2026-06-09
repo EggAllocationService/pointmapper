@@ -63,28 +63,28 @@ var<immediate> c: MaskPushConstants;
 fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     let idx = (pos.y * info.depth_width) + pos.x;
     var d = depth[idx] * c.scale;
-    depth[idx] = d;
-    if d > 4 {
-        d = 1000;
-    }
-
-    var filtered: f32 = 0;
-
-    if abs(d - prev_depth[idx]) > 0.5 {
-        filtered = 0;
+    if (prev_depth[idx] == 0) {
+        depth[idx] = d;
+        prev_depth[idx] = d;
+    } else if (d == 0) {
+        prev_depth[idx] = 0;
+        depth[idx] = 0;
     } else {
-        filtered = (d + prev_depth[idx]) / 2.0;
+        let filtered = (prev_depth[idx] * 0.9) + (d * 0.1);
+
+        prev_depth[idx] = filtered;
+
+        depth[idx] = filtered;
+        d = filtered;
     }
 
-    prev_depth[idx] = d;
+    max_depth[idx] = max(max_depth[idx], d);
 
-    max_depth[idx] = max(max_depth[idx], filtered);
-
-    let delta = abs(max_depth[idx] - filtered);
+    let delta = abs(max_depth[idx] - d);
 
     if delta < info.depth_tolerance {
         depth[idx] = 0;
-        max_depth[idx] = filtered;
+        max_depth[idx] = d;
     }
 }
 

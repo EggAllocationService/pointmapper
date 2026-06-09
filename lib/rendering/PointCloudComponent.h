@@ -44,6 +44,8 @@ public:
         return depthDevice;
     }
 
+    void SetRegistration(mat4 transform);
+
     bool FrameWaiting;
     Frame *Frame;
 

@@ -88,6 +88,15 @@ add_executable(testpoints src/main.cpp
         src/TestActor.cpp
         src/TestActor.h)
 
+set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
+set(OpenMP_C_LIB_NAMES "omp")
+set(OpenMP_omp_LIBRARY omp)
+set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+set(OpenMP_CXX_LIB_NAMES "omp")
+set(OpenMP_omp_LIBRARY omp)
+
+target_include_directories(pointmapper PUBLIC "/opt/homebrew/opt/libomp/include")
+target_link_directories(pointmapper PUBLIC "/opt/homebrew/opt/libomp/lib")
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 
