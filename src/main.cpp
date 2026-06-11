@@ -31,10 +31,10 @@ void my_terminate_handler() {
 }
 
 int main() {
-    //auto kDev = new Kinect2Device();
-    //auto rDev = new RealsenseDevice();
+    auto kDev = new Kinect2Device();
+    auto rDev = new RealsenseDevice();
 
-    //auto transform = registerDevices(rDev, kDev);
+    auto transform = registerDevices(rDev, kDev);
 
     //std::cout << transform << std::endl;
 
