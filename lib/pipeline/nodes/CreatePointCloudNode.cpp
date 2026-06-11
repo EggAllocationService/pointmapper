@@ -11,11 +11,13 @@ namespace pointmapper::pipeline {
 
         depth_map = CreateInput<GPUDepthMap>();
         camera_params = CreateInput<CameraParams>();
+        mask = CreateInput<GPUMask>();
     }
 
     void CreatePointCloudNode::Hydrate() {
     }
 
-    void CreatePointCloudNode::Process() {
+    void CreatePointCloudNode::Process(PipelineBundle&) {
+        printf("Creating Cloud\n");
     }
 }

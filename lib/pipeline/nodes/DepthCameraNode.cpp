@@ -23,6 +23,6 @@ void pointmapper::pipeline::DepthCameraNode::Hydrate() {
 
 }
 
-void pointmapper::pipeline::DepthCameraNode::Process() {
-    auto frame = device->GetNextFrame();
+void pointmapper::pipeline::DepthCameraNode::Process(PipelineBundle& bundle) {
+    printf("Reading Camera\n");
 }

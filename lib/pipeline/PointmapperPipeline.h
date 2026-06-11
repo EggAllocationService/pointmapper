@@ -10,6 +10,7 @@ struct CameraParams;
 
 /// Allows related objects to share GPU-side resources
 namespace pointmapper::pipeline {
+
     class PointmapperPipeline {
     public:
         PointmapperPipeline();
@@ -42,6 +43,8 @@ namespace pointmapper::pipeline {
 
         void Build();
 
+        void Process();
+
         WGPUBuffer CreateBuffer(unsigned int length, unsigned int usage);
         WGPUBindGroupLayout CreateBindGroupLayout(WGPUBindGroupLayoutEntry* entries);
 
@@ -49,6 +52,7 @@ namespace pointmapper::pipeline {
     private:
         std::vector<std::shared_ptr<Node>> nodes;
         std::vector<std::shared_ptr<Node>> roots;
+        std::vector<Node*> executionOrder;
 
         WGPUDevice device;
         WGPUQueue queue;

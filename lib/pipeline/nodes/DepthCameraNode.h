@@ -15,7 +15,7 @@ namespace pointmapper::pipeline {
         DepthCameraNode(DepthDevice* device);
         void Hydrate() override;
 
-        void Process() override;
+        void Process(PipelineBundle&) override;
 
         std::shared_ptr<Output<GPUDepthMap>> depth;
         std::shared_ptr<Output<CameraParams>> params;

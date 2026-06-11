@@ -135,7 +135,9 @@ void pointmapper::pipeline::PointmapperPipeline::Build() {
             // push it to the back
             toVisit.push_back(node);
         } else {
-            node->Hydrate();
+            node->Build();
+
+            executionOrder.push_back(node.get());
             // push all dependant nodes
             for (const auto& output : node->GetOutputs()) {
                 auto targets = output->GetTargets();
@@ -147,6 +149,13 @@ void pointmapper::pipeline::PointmapperPipeline::Build() {
     }
 
     built = true;
+}
+
+void pointmapper::pipeline::PointmapperPipeline::Process() {
+    auto bundle = PipelineBundle();
+    for (auto x : executionOrder) {
+        x->Process(bundle);
+    }
 }
 
 WGPUBuffer pointmapper::pipeline::PointmapperPipeline::CreateBuffer(unsigned int length, unsigned int usage) {

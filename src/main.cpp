@@ -4,7 +4,7 @@
 
 
 #include <iostream>
-#include "../lib/realsense/RealsenseDevice.h"
+
 
 #include <exception>
 #include <iostream>
@@ -18,6 +18,7 @@
 #include "../lib/kinect2/Kinect2Device.h"
 #include "../lib/pipeline/nodes/CreatePointCloudNode.h"
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
+#include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
 #include "../lib/rendering/pipelines.h"
 #include "../lib/registration/registration.h"
 
@@ -35,6 +36,7 @@ void my_terminate_handler() {
 int main() {
 
     auto pipeline = new pointmapper::pipeline::PointmapperPipeline();
+    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
 
     auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
@@ -42,7 +44,12 @@ int main() {
     cloud->camera_params->Connect(cam->params);
     cloud->depth_map->Connect(cam->depth);
 
+    mask->depthMap->Connect(cam->depth);
+    cloud->mask->Connect(mask->mask);
+
     pipeline->Build();
 
-    printf("Pipeline built!!!");
+    printf("Pipeline built!!!\n");
+
+    pipeline->Process();
 }

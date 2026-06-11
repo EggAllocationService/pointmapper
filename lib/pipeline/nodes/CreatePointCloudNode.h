@@ -16,12 +16,13 @@ namespace pointmapper::pipeline {
 
         void Hydrate() override;
 
-        void Process() override;
+        void Process(PipelineBundle&) override;
 
         std::shared_ptr<Output<GPUPointCloud>> cloud;
 
         std::shared_ptr<Input<GPUDepthMap>> depth_map;
         std::shared_ptr<Input<CameraParams>> camera_params;
+        std::shared_ptr<Input<GPUMask>> mask;
     };
 }
 

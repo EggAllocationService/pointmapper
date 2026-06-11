@@ -6,12 +6,17 @@
 #define POINTMAPPER_NODE_H
 
 #include <vector>
+#include <webgpu/webgpu.h>
 
 #include "Node.h"
 
 
 
 namespace pointmapper::pipeline {
+    struct PipelineBundle {
+        WGPUComputePassEncoder encoder;
+    };
+
     class PointmapperPipeline;
 
     extern PointmapperPipeline* PIPELINE;
@@ -37,7 +42,7 @@ namespace pointmapper::pipeline {
         virtual void Hydrate() = 0;
 
         /// Process inputs and produce outputs
-        virtual void Process() = 0;
+        virtual void Process(PipelineBundle&) = 0;
 
         [[nodiscard]] bool WasBuilt() const {
             return ready;
