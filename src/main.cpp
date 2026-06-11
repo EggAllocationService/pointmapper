@@ -10,12 +10,14 @@
 #include <iostream>
 #include <execinfo.h> // For backtrace() on Linux/macOS
 
-#include "../lib/PointmapperPipeline.h"
+#include "../lib/pipeline/PointmapperPipeline.h"
 #include <pcl/visualization/cloud_viewer.h>
 
 #include "Engine.h"
 #include "TestActor.h"
 #include "../lib/kinect2/Kinect2Device.h"
+#include "../lib/pipeline/nodes/CreatePointCloudNode.h"
+#include "../lib/pipeline/nodes/DepthCameraNode.h"
 #include "../lib/rendering/pipelines.h"
 #include "../lib/registration/registration.h"
 
@@ -31,33 +33,16 @@ void my_terminate_handler() {
 }
 
 int main() {
-    //auto kDev = new Kinect2Device();
-    //auto rDev = new RealsenseDevice();
 
-    //auto transform = registerDevices(rDev, kDev);
+    auto pipeline = new pointmapper::pipeline::PointmapperPipeline();
 
-    //std::cout << transform << std::endl;
+    auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
-    /*mat4 transform = {
-        0.966067, 0.242103, -0.0900153, 0,
-        -0.205958, 0.932338, 0.297202, 0,
-        0.155878, -0.268577, 0.950563, 0,
-        0.000357822, 0.0639697, -0.194791, 1
-    };*/
+    auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
+    cloud->camera_params->Connect(cam->params);
+    cloud->depth_map->Connect(cam->depth);
 
-    std::set_terminate(my_terminate_handler);
-    auto engine = new glengine::Engine("Pointmapper Demo", int2(1280, 720));
-    engine->SetAllowNonFocusedPawnInput(true);
-    addPointmapperPipelines(engine->GetRenderer());
+    pipeline->Build();
 
-    auto kinect = engine->SpawnActor<TestActor>();
-    kinect->GetTransform()->SetPosition({-8, 0, 5});
-    kinect->SetDevice(new Kinect2Device());
-
-    //auto realsense = engine->SpawnActor<TestActor>();
-    //realsense->GetTransform()->SetPosition({8, 0, 5});
-    //realsense->SetDevice(rDev);
-    //realsense->SetRegistration(transform);
-
-    engine->MainLoop();
+    printf("Pipeline built!!!");
 }

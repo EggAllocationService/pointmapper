@@ -3,9 +3,12 @@
 //
 
 #include "PointmapperPipeline.h"
+#include "../common.h"
+#include "wgpu.h"
 
 #include <cassert>
 #include <iostream>
+#include <list>
 
 static void handle_request_adapter(WGPURequestAdapterStatus status,
                                    WGPUAdapter adapter, WGPUStringView message,
@@ -32,12 +35,7 @@ static void handle_request_device(WGPURequestDeviceStatus status,
     }
 }
 
-#define QUEUE reinterpret_cast<WGPUQueue>(this->queue)
-#define DEVICE reinterpret_cast<WGPUDevice>(this->device)
-#define POINT_BUFFER reinterpret_cast<WGPUBuffer>(this->pointBuffer)
-#define INFO_BUFFER reinterpret_cast<WGPUBuffer>(this->infoBuffer)
-
-PointmapperPipeline::PointmapperPipeline() {
+pointmapper::pipeline::PointmapperPipeline::PointmapperPipeline() {
     auto instance = wgpuCreateInstance(nullptr);
     auto adapters = new WGPUAdapter[10];
     auto adapterCount = wgpuInstanceEnumerateAdapters(instance, nullptr, adapters);
@@ -97,34 +95,59 @@ PointmapperPipeline::PointmapperPipeline() {
     this->device = device;
     this->queue = wgpuDeviceGetQueue(device);
 
-    auto infoBufferDesc = WGPU_BUFFER_DESCRIPTOR_INIT;
-    infoBufferDesc.size = sizeof(uint32_t) * 4;
-    infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_Indirect | WGPUBufferUsage_CopyDst;
-    this->infoBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
-    uint32_t vertexCount = 36;
-    wgpuQueueWriteBuffer(QUEUE, INFO_BUFFER, 0, &vertexCount, sizeof(uint32_t));
-
-    backgroundProcessor = std::make_shared<BackgroundProcessor>(DEVICE, QUEUE, INFO_BUFFER);
 }
 
-PointmapperPipeline::~PointmapperPipeline() {
-    wgpuDeviceRelease(DEVICE);
-    wgpuQueueRelease(QUEUE);
+pointmapper::pipeline::PointmapperPipeline::PointmapperPipeline(WGPUDevice device, WGPUQueue queue) {
+    this->device = device;
+    this->queue = queue;
 }
 
-std::shared_ptr<BackgroundProcessor> PointmapperPipeline::GetBackgroundProcessor() {
-    return backgroundProcessor;
+pointmapper::pipeline::PointmapperPipeline::~PointmapperPipeline() {
+    wgpuDeviceRelease(device);
+    wgpuQueueRelease(queue);
 }
 
-void PointmapperPipeline::resize(CameraParams params) {
-    if (pointBuffer != nullptr) {
-        wgpuBufferRelease(POINT_BUFFER);
+void pointmapper::pipeline::PointmapperPipeline::Build() {
+    PIPELINE = this;
+
+    std::list<std::shared_ptr<Node>> toVisit;
+
+    toVisit.insert(toVisit.end(), roots.begin(), roots.end());
+
+    while (!toVisit.empty()) {
+        auto node = toVisit.front();
+        toVisit.pop_front();
+
+        if (node->WasBuilt()) {
+            continue;
+        }
+
+        // check that all inputs are connected & ready
+        bool ok = true;
+        for (const auto& input : node->GetInputs()) {
+            if (!input->IsConnected()) {
+                ok = false;
+                break;
+            }
+        }
+        if (!ok) {
+            // an input is not ready, probably waiting for another root to prep its part of the graph.
+            // push it to the back
+            toVisit.push_back(node);
+        } else {
+            node->Hydrate();
+            // push all dependant nodes
+            for (const auto& output : node->GetOutputs()) {
+                auto targets = output->GetTargets();
+                for (const auto& target : targets) {
+                    toVisit.push_back(target->GetNode());
+                }
+            }
+        }
     }
 
-    auto infoBufferDesc = WGPU_BUFFER_DESCRIPTOR_INIT;
-    infoBufferDesc.size = params.width * params.height * sizeof(PointXYZRGB);
-    infoBufferDesc.usage = WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc;
-    this->pointBuffer = wgpuDeviceCreateBuffer(DEVICE, &infoBufferDesc);
+    built = true;
+}
 
-    backgroundProcessor->resize(params, POINT_BUFFER);
+WGPUBuffer pointmapper::pipeline::PointmapperPipeline::CreateBuffer(unsigned int length, unsigned int usage) {
 }

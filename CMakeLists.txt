@@ -17,14 +17,21 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/background/BackgroundProcessor.h
         lib/common.h
         lib/common.cpp
-        lib/PointmapperPipeline.cpp
-        lib/PointmapperPipeline.h
+        lib/pipeline/PointmapperPipeline.cpp
+        lib/pipeline/PointmapperPipeline.h
         lib/rendering/PointCloudComponent.cpp
         lib/rendering/PointCloudComponent.h
         lib/rendering/pipelines.cpp
         lib/rendering/pipelines.h
         lib/registration/registration.cpp
-        lib/registration/registration.h)
+        lib/registration/registration.h
+        lib/pipeline/nodes/Node.h
+        lib/pipeline/types/CommonTypes.h
+        lib/pipeline/nodes/DepthCameraNode.cpp
+        lib/pipeline/nodes/DepthCameraNode.h
+        lib/pipeline/nodes/Node.cpp
+        lib/pipeline/nodes/CreatePointCloudNode.cpp
+        lib/pipeline/nodes/CreatePointCloudNode.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)

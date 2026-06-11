@@ -137,8 +137,9 @@ var<workgroup> wg: WorkgroupInfo;
 @compute @workgroup_size(8, 8)
 fn remove_blobs(@builtin(global_invocation_id) pos: vec3<u32>, @builtin(local_invocation_id) wgPos: vec3<u32>) {
     if (wgPos.x == 0 && wgPos.y == 0) {
-        wg.max = 1;
+        atomicStore(&wg.max, 1);
     }
+
     let idx = (pos.y * info.depth_width) + pos.x;
 
     if (wgPos.x == 0 || wgPos.y == 0 || wgPos.x == 7 || wgPos.y == 7) {
