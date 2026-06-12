@@ -45,10 +45,10 @@ namespace pointmapper::pipeline {
 
         void Process();
 
-        WGPUBuffer CreateBuffer(unsigned int length, unsigned int usage);
-        WGPUBindGroupLayout CreateBindGroupLayout(WGPUBindGroupLayoutEntry* entries);
+        [[nodiscard]] WGPUBuffer CreateBuffer(unsigned int length, WGPUBufferUsage usage) const;
+        [[nodiscard]] WGPUBindGroupLayout CreateBindGroupLayout(const WGPUBindGroupLayoutEntry* entries, unsigned long count) const;
 
-        WGPUShaderModule CompileShaderModule(char* shader);
+        [[nodiscard]] WGPUShaderModule CompileShaderModule(const char* shader) const;
     private:
         std::vector<std::shared_ptr<Node>> nodes;
         std::vector<std::shared_ptr<Node>> roots;

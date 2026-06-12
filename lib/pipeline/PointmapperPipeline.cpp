@@ -158,5 +158,40 @@ void pointmapper::pipeline::PointmapperPipeline::Process() {
     }
 }
 
-WGPUBuffer pointmapper::pipeline::PointmapperPipeline::CreateBuffer(unsigned int length, unsigned int usage) {
+WGPUBuffer pointmapper::pipeline::PointmapperPipeline::CreateBuffer(unsigned int length, WGPUBufferUsage usage) const {
+    auto desc = WGPUBufferDescriptor {
+        .nextInChain = nullptr,
+        .label = {},
+        .usage = usage,
+        .size = length,
+        .mappedAtCreation = false
+    };
+
+    return wgpuDeviceCreateBuffer(device, &desc);
+}
+
+WGPUBindGroupLayout pointmapper::pipeline::PointmapperPipeline::
+CreateBindGroupLayout(const WGPUBindGroupLayoutEntry *entries, const unsigned long count) const {
+    const auto desc = WGPUBindGroupLayoutDescriptor {
+        .nextInChain = nullptr,
+        .label = {},
+        .entryCount = count,
+        .entries = entries
+    };
+    return wgpuDeviceCreateBindGroupLayout(device, &desc);
+}
+
+WGPUShaderModule pointmapper::pipeline::PointmapperPipeline::CompileShaderModule(const char *shader) const {
+
+    WGPUShaderSourceWGSL source = WGPU_SHADER_SOURCE_WGSL_INIT;
+    source.code = {
+        .data = shader,
+        .length = WGPU_STRLEN
+    };
+
+    auto desc = WGPUShaderModuleDescriptor {
+        .nextInChain = &source.chain,
+        .label = {}
+    };
+    return wgpuDeviceCreateShaderModule(device, &desc);
 }
