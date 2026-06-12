@@ -93,12 +93,13 @@ pointmapper::pipeline::PointmapperPipeline::PointmapperPipeline() {
 
     this->device = device;
     this->queue = wgpuDeviceGetQueue(device);
-
+    built = false;
 }
 
 pointmapper::pipeline::PointmapperPipeline::PointmapperPipeline(WGPUDevice device, WGPUQueue queue) {
     this->device = device;
     this->queue = queue;
+    built = false;
 }
 
 pointmapper::pipeline::PointmapperPipeline::~PointmapperPipeline() {
