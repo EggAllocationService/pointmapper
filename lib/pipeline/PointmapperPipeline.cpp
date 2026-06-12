@@ -4,7 +4,6 @@
 
 #include "PointmapperPipeline.h"
 #include "../common.h"
-#include "wgpu.h"
 
 #include <cassert>
 #include <iostream>

@@ -4,7 +4,7 @@
 #pragma once
 #include "nodes/Node.h"
 
-#include "wgpu.h"
+#include "webgpu/wgpu.h"
 
 struct CameraParams;
 

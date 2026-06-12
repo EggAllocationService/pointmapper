@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "wgpu.h"
+#include "webgpu/wgpu.h"
 
 namespace pointmapper::pipeline {
     struct GPUDepthMap {
