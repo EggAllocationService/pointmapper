@@ -15,7 +15,7 @@ TestActor::TestActor() {
 
     text_ = CreateComponent<glengine::world::font::SlugTextComponent>();
     text_->SetFont(
-        GetEngine()->GetResourceManager()->GetResource<glengine::world::font::Font>("/builtin/trim.ttf")
+        GetEngine()->GetResourceManager()->GetResource<glengine::world::font::Font>("/builtin/fonts/trim.ttf")
     );
     text_->GetTransform()->SetScale({0.5, 0.5, 0.5});
     text_->SetText("Unknown");

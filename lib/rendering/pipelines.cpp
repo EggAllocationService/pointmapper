@@ -90,5 +90,5 @@ void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {
         .entries = &renderEntries[0]
     };
 
-    renderer->BuildRenderPipeline("cloud", shaders, nullptr, std::span(&renderLayout, 1), sizeof(mat4));
+    renderer->BuildRenderPipeline("cloud", shaders, nullptr, std::span(&renderLayout, 1), sizeof(mat4), nullptr);
 }

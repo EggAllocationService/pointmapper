@@ -60,7 +60,7 @@ PointCloudComponent::PointCloudComponent() {
     maskPipeline->CommitBindings();
     cloudPipeline->CommitBindings();
 
-    mesh = GetEngine()->GetResourceManager()->GetResource<glengine::world::mesh::StaticMesh>("/Users/kyle/CLionProjects/GLEngine/test3d/assets/cube-tex.obj")->mesh;
+    mesh = GetEngine()->GetResourceManager()->GetResource<glengine::world::mesh::StaticMesh>("/builtin/models/cube.obj")->mesh;
     readingThread = std::thread(::readingThread, this);
 
     WGPUBindGroupEntry sampler = WGPU_BIND_GROUP_ENTRY_INIT;
