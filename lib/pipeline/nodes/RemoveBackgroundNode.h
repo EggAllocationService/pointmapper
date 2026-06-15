@@ -4,9 +4,11 @@
 
 #ifndef POINTMAPPER_REMOVEBACKGROUNDNODE_H
 #define POINTMAPPER_REMOVEBACKGROUNDNODE_H
-#include "Node.h"
-#include "../types/CommonTypes.h"
 
+#include "Node.h"
+#include "../../common.h"
+#include "../ComputePipeline.h"
+#include "../types/CommonTypes.h"
 
 namespace pointmapper::pipeline {
     class RemoveBackgroundNode : public Node {
@@ -16,10 +18,20 @@ namespace pointmapper::pipeline {
 
         void Process(PipelineBundle &) override;
 
-        std::shared_ptr<Output<GPUMask>> mask;
-        std::shared_ptr<Input<GPUDepthMap>> depthMap;
+        std::shared_ptr<Output<GPUDepthMap>> depthMap;
+        std::shared_ptr<Input<GPUDepthMap>> inputDepthMap;
+        std::shared_ptr<Input<CameraParams>> camera_params;
+        std::shared_ptr<Input<GPUFrameData>> frameData;
+
+    private:
+        WGPUBuffer pipelineInfoBuffer = nullptr;
+        WGPUBuffer dummyOutInfo = nullptr;
+        WGPUBuffer maxDepth = nullptr;
+        WGPUBuffer prevDepth = nullptr;
+
+        std::shared_ptr<ComputePipeline> maskPipeline;
+        std::shared_ptr<ComputePipeline> blobPipeline;
     };
-} // pipeline
-// pointmapper
+}
 
 #endif //POINTMAPPER_REMOVEBACKGROUNDNODE_H

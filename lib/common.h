@@ -3,7 +3,11 @@
 //
 #pragma once
 #include <cstdint>
+#ifdef POINTMAPPER_USE_GLENGINE_MATH
 #include "Vectors.h"
+#else
+#include "PointmapperMath.h"
+#endif
 
 // Opaque pointer for a GPU-side cloud data structure
 typedef void* PointmapperDeviceCloud;

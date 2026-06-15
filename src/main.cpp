@@ -2,25 +2,15 @@
 // Created by Kyle Smith on 2026-05-22.
 //
 
-
 #include <iostream>
-
-
 #include <exception>
-#include <iostream>
-#include <execinfo.h> // For backtrace() on Linux/macOS
+#include <execinfo.h>
 
 #include "../lib/pipeline/PointmapperPipeline.h"
-#include <pcl/visualization/cloud_viewer.h>
-
-#include "Engine.h"
-#include "TestActor.h"
 #include "../lib/kinect2/Kinect2Device.h"
 #include "../lib/pipeline/nodes/CreatePointCloudNode.h"
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
 #include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
-#include "../lib/rendering/pipelines.h"
-#include "../lib/registration/registration.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -34,18 +24,21 @@ void my_terminate_handler() {
 }
 
 int main() {
-
     auto pipeline = new pointmapper::pipeline::PointmapperPipeline();
-    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
-
     auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
+
+    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
 
     auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
     cloud->camera_params->Connect(cam->params);
-    cloud->depth_map->Connect(cam->depth);
+    cloud->color->Connect(cam->color);
+    cloud->frameData->Connect(cam->frameData);
 
-    mask->depthMap->Connect(cam->depth);
-    cloud->mask->Connect(mask->mask);
+    mask->inputDepthMap->Connect(cam->depth);
+    mask->camera_params->Connect(cam->params);
+    mask->frameData->Connect(cam->frameData);
+
+    cloud->depth_map->Connect(mask->depthMap);
 
     pipeline->Build();
 

@@ -5,6 +5,7 @@
 #include "pipelines.h"
 #include "PointResources.h"
 #include "PointCloudComponent.h"
+#include "../pipeline/types/CommonTypes.h"
 
 void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {
     auto shaders = renderer->CompileShader(embed_shaders_wgsl);
@@ -13,7 +14,7 @@ void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {
     auto groupLayouts = new WGPUBindGroupLayoutDescriptor[4];
     auto group0Bindings = new WGPUBindGroupLayoutEntry[2] { WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT, WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT };
     group0Bindings[0].buffer.type = WGPUBufferBindingType_Uniform;
-    group0Bindings[0].buffer.minBindingSize = sizeof(PipelineInfo);
+    group0Bindings[0].buffer.minBindingSize = sizeof(pointmapper::pipeline::ComputePipelineInfo);
     group0Bindings[0].visibility = WGPUShaderStage_Compute;
 
     group0Bindings[1].buffer.type = WGPUBufferBindingType_Storage;

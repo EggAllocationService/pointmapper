@@ -19,10 +19,12 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/common.cpp
         lib/pipeline/PointmapperPipeline.cpp
         lib/pipeline/PointmapperPipeline.h
-        lib/rendering/PointCloudComponent.cpp
-        lib/rendering/PointCloudComponent.h
-        lib/rendering/pipelines.cpp
-        lib/rendering/pipelines.h
+        lib/pipeline/ComputePipeline.cpp
+        lib/pipeline/ComputePipeline.h
+        lib/pipeline/GPUTexture.cpp
+        lib/pipeline/GPUTexture.h
+        lib/pipeline/EmbeddedKernels.cpp
+        lib/pipeline/EmbeddedKernels.h
         lib/registration/registration.cpp
         lib/registration/registration.h
         lib/pipeline/nodes/Node.h
@@ -88,14 +90,17 @@ if (VISUALIZATION)
     )
     target_link_libraries(pointmapper PUBLIC glengine PointResources)
     target_include_directories(pointmapper PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_compile_definitions(pointmapper PUBLIC POINTMAPPER_USE_GLENGINE_MATH)
 else()
     provide_wgpu_native("29.0.0.0")
-    target_link_libraries(pointmapper webgpu)
+    target_link_libraries(pointmapper PUBLIC webgpu)
 endif()
 
-add_executable(testpoints src/main.cpp
-        src/TestActor.cpp
-        src/TestActor.h)
+if(VISUALIZATION)
+    add_executable(testpoints src/main.cpp
+            src/TestActor.cpp
+            src/TestActor.h)
+endif()
 
 set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
 set(OpenMP_C_LIB_NAMES "omp")
@@ -112,5 +117,7 @@ find_package(Eigen3 REQUIRED)
 target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${PCL_LIBRARIES})
 target_include_directories(pointmapper PUBLIC ${PCL_INCLUDE_DIRS})
 
-target_link_libraries(testpoints PUBLIC pointmapper)
+if(VISUALIZATION)
+    target_link_libraries(testpoints PUBLIC pointmapper)
+endif()
 

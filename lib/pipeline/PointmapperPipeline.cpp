@@ -152,10 +152,32 @@ void pointmapper::pipeline::PointmapperPipeline::Build() {
 }
 
 void pointmapper::pipeline::PointmapperPipeline::Process() {
-    auto bundle = PipelineBundle();
+    auto encoderDesc = WGPUCommandEncoderDescriptor {
+        .nextInChain = nullptr,
+        .label = {}
+    };
+    auto encoder = wgpuDeviceCreateCommandEncoder(device, &encoderDesc);
+
+    auto passDesc = WGPUComputePassDescriptor {
+        .nextInChain = nullptr,
+        .label = {},
+        .timestampWrites = nullptr
+    };
+    auto pass = wgpuCommandEncoderBeginComputePass(encoder, &passDesc);
+
+    auto bundle = PipelineBundle { pass };
     for (auto x : executionOrder) {
         x->Process(bundle);
     }
+
+    wgpuComputePassEncoderEnd(pass);
+
+    auto cmd = wgpuCommandEncoderFinish(encoder, nullptr);
+    wgpuQueueSubmit(queue, 1, &cmd);
+
+    wgpuCommandBufferRelease(cmd);
+    wgpuComputePassEncoderRelease(pass);
+    wgpuCommandEncoderRelease(encoder);
 }
 
 WGPUBuffer pointmapper::pipeline::PointmapperPipeline::CreateBuffer(unsigned int length, WGPUBufferUsage usage) const {
@@ -194,4 +216,90 @@ WGPUShaderModule pointmapper::pipeline::PointmapperPipeline::CompileShaderModule
         .label = {}
     };
     return wgpuDeviceCreateShaderModule(device, &desc);
+}
+
+std::shared_ptr<pointmapper::pipeline::ComputePipeline> pointmapper::pipeline::PointmapperPipeline::
+GetComputePipelineByName(const std::string& name) const {
+    auto it = computePipelines.find(name);
+    if (it != computePipelines.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+std::shared_ptr<pointmapper::pipeline::ComputePipeline> pointmapper::pipeline::PointmapperPipeline::
+BuildComputePipeline(std::string name, WGPUShaderModule kernel, std::string_view entryPoint,
+                    std::span<WGPUBindGroupLayoutDescriptor> bindGroups, uint32_t immediateDataBytes) {
+    std::vector<WGPUBindGroupLayout> layouts;
+    layouts.reserve(bindGroups.size());
+    for (auto& desc : bindGroups) {
+        layouts.push_back(wgpuDeviceCreateBindGroupLayout(device, &desc));
+    }
+
+    WGPUPipelineLayoutExtras extras = {
+        .chain = {
+            .next = nullptr,
+            .sType = static_cast<WGPUSType>(WGPUSType_PipelineLayoutExtras)
+        },
+        .immediateDataSize = immediateDataBytes
+    };
+
+    auto layoutDesc = WGPUPipelineLayoutDescriptor {
+        .nextInChain = &extras.chain,
+        .label = {},
+        .bindGroupLayoutCount = layouts.size(),
+        .bindGroupLayouts = layouts.data(),
+        .immediateSize = immediateDataBytes
+    };
+
+    auto desc = WGPUComputePipelineDescriptor {
+        .nextInChain = nullptr,
+        .label = {
+            .data = name.data(),
+            .length = name.length()
+        },
+        .layout = wgpuDeviceCreatePipelineLayout(device, &layoutDesc),
+        .compute = {
+            .nextInChain = nullptr,
+            .module = kernel,
+            .entryPoint = {
+                .data = entryPoint.data(),
+                .length = entryPoint.length()
+            },
+            .constantCount = 0,
+            .constants = nullptr
+        }
+    };
+
+    auto pipeline = wgpuDeviceCreateComputePipeline(device, &desc);
+
+    auto built = std::make_shared<ComputePipeline>(device, pipeline, std::move(layouts), immediateDataBytes);
+    computePipelines.insert_or_assign(name, built);
+    return built;
+}
+
+std::shared_ptr<pointmapper::pipeline::GPUTexture> pointmapper::pipeline::PointmapperPipeline::
+CreateTexture(std::string_view name, WGPUTextureUsage usage, WGPUTextureFormat format,
+              unsigned int width, unsigned int height) const {
+    auto desc = WGPUTextureDescriptor {
+        .nextInChain = nullptr,
+        .label = {
+            .data = name.data(),
+            .length = name.length()
+        },
+        .usage = usage,
+        .dimension = WGPUTextureDimension_2D,
+        .size = {
+            .width = width,
+            .height = height,
+            .depthOrArrayLayers = 1
+        },
+        .format = format,
+        .mipLevelCount = 1,
+        .sampleCount = 1,
+        .viewFormatCount = 0,
+        .viewFormats = nullptr
+    };
+
+    return std::make_shared<GPUTexture>(wgpuDeviceCreateTexture(device, &desc), format, width, height);
 }

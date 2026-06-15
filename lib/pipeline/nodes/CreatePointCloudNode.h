@@ -4,10 +4,11 @@
 
 #ifndef POINTMAPPER_CREATEPOINTCLOUDNODE_H
 #define POINTMAPPER_CREATEPOINTCLOUDNODE_H
+
 #include "Node.h"
 #include "../../common.h"
+#include "../ComputePipeline.h"
 #include "../types/CommonTypes.h"
-
 
 namespace pointmapper::pipeline {
     class CreatePointCloudNode : public Node {
@@ -22,9 +23,16 @@ namespace pointmapper::pipeline {
 
         std::shared_ptr<Input<GPUDepthMap>> depth_map;
         std::shared_ptr<Input<CameraParams>> camera_params;
-        std::shared_ptr<Input<GPUMask>> mask;
+        std::shared_ptr<Input<GPUColorTexture>> color;
+        std::shared_ptr<Input<GPUFrameData>> frameData;
+
+    private:
+        WGPUBuffer pipelineInfoBuffer = nullptr;
+        WGPUBuffer pointCountBuffer = nullptr;
+        WGPUSampler sampler = nullptr;
+
+        std::shared_ptr<ComputePipeline> cloudPipeline;
     };
 }
-
 
 #endif //POINTMAPPER_CREATEPOINTCLOUDNODE_H

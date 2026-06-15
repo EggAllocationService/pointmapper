@@ -4,7 +4,11 @@
 
 #pragma once
 
+#include "../GPUTexture.h"
 #include "webgpu/wgpu.h"
+
+#include <cstdint>
+#include <memory>
 
 namespace pointmapper::pipeline {
     struct GPUDepthMap {
@@ -26,5 +30,26 @@ namespace pointmapper::pipeline {
         WGPUBuffer mask;
         unsigned int width;
         unsigned int height;
+    };
+
+    struct GPUColorTexture {
+        std::shared_ptr<GPUTexture> texture;
+    };
+
+    struct GPUFrameData {
+        float depthUnits;
+        float axisScale[4];
+    };
+
+    struct ComputePipelineInfo {
+        float fx;
+        float fy;
+        float cx;
+        float cy;
+        uint32_t width;
+        uint32_t height;
+        uint32_t colorWidth;
+        uint32_t colorHeight;
+        float depth_tolerance;
     };
 }
