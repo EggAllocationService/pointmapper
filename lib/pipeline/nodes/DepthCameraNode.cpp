@@ -7,7 +7,6 @@
 #include "../../common.h"
 
 #include <algorithm>
-#include <cstring>
 
 pointmapper::pipeline::DepthCameraNode::DepthCameraNode(DepthDevice* d) {
     depth = CreateOutput<GPUDepthMap>();
@@ -108,8 +107,8 @@ void pointmapper::pipeline::DepthCameraNode::Process(PipelineBundle&) {
 }
 
 void pointmapper::pipeline::DepthCameraNode::CaptureThread() {
-    const size_t depthPixels = static_cast<size_t>(cameraParams.width * cameraParams.height);
-    const size_t colorPixels = static_cast<size_t>(cameraParams.colorWidth * cameraParams.colorHeight);
+    const auto depthPixels = cameraParams.width * cameraParams.height;
+    const auto colorPixels = cameraParams.colorWidth * cameraParams.colorHeight;
 
     while (true) {
         {
