@@ -11,6 +11,7 @@
 #include "../lib/pipeline/nodes/CreatePointCloudNode.h"
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
 #include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
+#include "../lib/pipeline/nodes/RemoveBlobsNode.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -28,6 +29,7 @@ int main() {
     auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
     auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
+    auto blobs = pipeline->CreateNode<pointmapper::pipeline::RemoveBlobsNode>();
 
     auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
     cloud->camera_params->Connect(cam->params);
@@ -38,11 +40,17 @@ int main() {
     mask->camera_params->Connect(cam->params);
     mask->frameData->Connect(cam->frameData);
 
-    cloud->depth_map->Connect(mask->depthMap);
+    blobs->inputDepthMap->Connect(mask->depthMap);
+    blobs->camera_params->Connect(cam->params);
+    blobs->frameData->Connect(cam->frameData);
+
+    cloud->depth_map->Connect(blobs->depthMap);
 
     pipeline->Build();
 
     printf("Pipeline built!!!\n");
 
     pipeline->Process();
+
+    wgpuDevicePoll(pipeline->GetDevice(), true, nullptr);
 }

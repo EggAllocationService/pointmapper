@@ -56,17 +56,16 @@ namespace pointmapper::pipeline {
             group3Entries[1].visibility = WGPUShaderStage_Compute;
             group3Entries[1].binding = 1;
 
-            std::vector<WGPUBindGroupLayoutDescriptor> layouts(4);
+            std::vector<WGPUBindGroupLayoutDescriptor> layouts(3);
             layouts[0] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
             layouts[0].entryCount = 2;
             layouts[0].entries = group0Entries.data();
             layouts[1] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
             layouts[1].entryCount = 2;
             layouts[1].entries = group1Entries.data();
-            layouts[2] = layouts[1];
-            layouts[3] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
-            layouts[3].entryCount = 2;
-            layouts[3].entries = group3Entries.data();
+            layouts[2] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
+            layouts[2].entryCount = 2;
+            layouts[2].entries = group3Entries.data();
 
             auto kernels = PIPELINE->CompileShaderModule(embeddedKernels);
             base = PIPELINE->BuildComputePipeline("cloud", kernels, "create_cloud", std::span(layouts), sizeof(float4));
@@ -79,7 +78,7 @@ namespace pointmapper::pipeline {
 
         auto& out = *(*cloud);
         out.points = PIPELINE->CreateBuffer(pointBytes, WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc);
-        out.pointCount = PIPELINE->CreateBuffer(16, WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc);
+        out.pointCount = PIPELINE->CreateBuffer(16, WGPUBufferUsage_Storage | WGPUBufferUsage_CopySrc | WGPUBufferUsage_CopyDst);
         out.maximumPointCount = static_cast<unsigned int>(depthPixels);
 
         pipelineInfoBuffer = PIPELINE->CreateBuffer(sizeof(ComputePipelineInfo), WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst);
@@ -111,8 +110,8 @@ namespace pointmapper::pipeline {
         cloudPipeline->SetBinding(0, countEntry);
         cloudPipeline->SetBinding(1, depthEntry);
         cloudPipeline->SetBinding(1, pointsEntry);
-        cloudPipeline->SetBinding(3, samplerEntry);
-        cloudPipeline->SetBinding(3, colorEntry);
+        cloudPipeline->SetBinding(2, samplerEntry);
+        cloudPipeline->SetBinding(2, colorEntry);
         cloudPipeline->CommitBindings();
 
         cloud->MarkReady();

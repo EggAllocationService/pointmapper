@@ -1,9 +1,9 @@
 //
-// Created by Kyle Smith on 2026-06-11.
+// Created by Kyle Smith on 2026-06-16.
 //
 
-#ifndef POINTMAPPER_REMOVEBACKGROUNDNODE_H
-#define POINTMAPPER_REMOVEBACKGROUNDNODE_H
+#ifndef POINTMAPPER_REMOVEBLOBSNODE_H
+#define POINTMAPPER_REMOVEBLOBSNODE_H
 
 #include "Node.h"
 #include "../../common.h"
@@ -11,9 +11,9 @@
 #include "../types/CommonTypes.h"
 
 namespace pointmapper::pipeline {
-    class RemoveBackgroundNode : public Node {
+    class RemoveBlobsNode : public Node {
     public:
-        RemoveBackgroundNode();
+        RemoveBlobsNode();
         void Hydrate() override;
 
         void Process(PipelineBundle &) override;
@@ -25,12 +25,9 @@ namespace pointmapper::pipeline {
 
     private:
         WGPUBuffer pipelineInfoBuffer = nullptr;
-        WGPUBuffer dummyOutInfo = nullptr;
-        WGPUBuffer maxDepth = nullptr;
-        WGPUBuffer prevDepth = nullptr;
 
-        std::shared_ptr<ComputePipeline> maskPipeline;
+        std::shared_ptr<ComputePipeline> blobPipeline;
     };
 }
 
-#endif //POINTMAPPER_REMOVEBACKGROUNDNODE_H
+#endif //POINTMAPPER_REMOVEBLOBSNODE_H

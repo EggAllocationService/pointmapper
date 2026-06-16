@@ -96,10 +96,10 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
 }
 
 
-@group(3)
+@group(2)
 @binding(0)
 var texSampler: sampler;
-@group(3)
+@group(2)
 @binding(1)
 var colorTex: texture_2d<f32>;
 

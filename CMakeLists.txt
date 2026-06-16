@@ -35,7 +35,9 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/pipeline/nodes/CreatePointCloudNode.cpp
         lib/pipeline/nodes/CreatePointCloudNode.h
         lib/pipeline/nodes/RemoveBackgroundNode.h
-        lib/pipeline/nodes/RemoveBackgroundNode.cpp)
+        lib/pipeline/nodes/RemoveBackgroundNode.cpp
+        lib/pipeline/nodes/RemoveBlobsNode.h
+        lib/pipeline/nodes/RemoveBlobsNode.cpp)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)

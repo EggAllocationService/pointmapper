@@ -55,33 +55,6 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
     }
     maskPipeline = baseMask->CreateInstance();
 
-    auto baseBlob = PIPELINE->GetComputePipelineByName("remove_blobs");
-    if (baseBlob == nullptr) {
-        std::vector<WGPUBindGroupLayoutEntry> group0Entries(1);
-        group0Entries[0] = WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT;
-        group0Entries[0].buffer.type = WGPUBufferBindingType_Uniform;
-        group0Entries[0].buffer.minBindingSize = sizeof(ComputePipelineInfo);
-        group0Entries[0].visibility = WGPUShaderStage_Compute;
-
-        std::vector<WGPUBindGroupLayoutEntry> group1Entries(1);
-        group1Entries[0] = WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT;
-        group1Entries[0].binding = 0;
-        group1Entries[0].buffer.type = WGPUBufferBindingType_Storage;
-        group1Entries[0].visibility = WGPUShaderStage_Compute;
-
-        std::vector<WGPUBindGroupLayoutDescriptor> layouts(2);
-        layouts[0] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
-        layouts[0].entryCount = 1;
-        layouts[0].entries = group0Entries.data();
-        layouts[1] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
-        layouts[1].entryCount = 1;
-        layouts[1].entries = group1Entries.data();
-
-        auto kernels = PIPELINE->CompileShaderModule(embeddedKernels);
-        baseBlob = PIPELINE->BuildComputePipeline("remove_blobs", kernels, "remove_blobs", std::span(layouts), 0);
-    }
-    blobPipeline = baseBlob->CreateInstance();
-
     const auto& p = *(*camera_params).operator->();
     auto depthSize = static_cast<unsigned int>(p.width * p.height * sizeof(float));
 
@@ -122,10 +95,6 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
     maskPipeline->SetBinding(2, prevDepthEntry);
     maskPipeline->CommitBindings();
 
-    blobPipeline->SetBinding(0, infoEntry);
-    blobPipeline->SetBinding(1, depthEntry);
-    blobPipeline->CommitBindings();
-
     auto& out = *(*depthMap);
     out = *inputDepth;
     depthMap->MarkReady();
@@ -156,5 +125,4 @@ void pointmapper::pipeline::RemoveBackgroundNode::Process(PipelineBundle &bundle
     int groupsY = std::max(1, p.height / 8);
 
     maskPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, &scale);
-    blobPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, nullptr);
 }
