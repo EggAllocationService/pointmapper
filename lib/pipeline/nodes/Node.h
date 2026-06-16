@@ -14,7 +14,19 @@
 
 namespace pointmapper::pipeline {
     struct PipelineBundle {
+        WGPUCommandEncoder cmd;
         WGPUComputePassEncoder encoder;
+        WGPUQueue queue;
+        WGPUDevice device;
+
+        void Flush() {
+            wgpuComputePassEncoderEnd(encoder);
+            auto buf = wgpuCommandEncoderFinish(cmd, nullptr);
+            wgpuQueueSubmit(queue, 1, &buf);
+
+            cmd = wgpuDeviceCreateCommandEncoder(device, nullptr);
+            encoder = wgpuCommandEncoderBeginComputePass(cmd, nullptr);
+        }
     };
 
     class PointmapperPipeline;

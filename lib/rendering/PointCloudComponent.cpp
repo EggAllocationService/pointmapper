@@ -51,7 +51,6 @@ void PointCloudComponent::Update(double deltaTime) {
     wgpuCommandEncoderRelease(encoder);
     wgpuQueueSubmit(queue, 1, &cmd);
     wgpuCommandBufferRelease(cmd);
-    wgpuQueueRelease(queue);
 }
 
 void PointCloudComponent::Render(const glengine::pipeline::wgpu::RenderBundle& bundle, glengine::MatrixStack &stack) {

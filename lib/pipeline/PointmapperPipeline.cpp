@@ -165,7 +165,13 @@ void pointmapper::pipeline::PointmapperPipeline::Process() {
     };
     auto pass = wgpuCommandEncoderBeginComputePass(encoder, &passDesc);
 
-    auto bundle = PipelineBundle { pass };
+    auto bundle = PipelineBundle {
+        .cmd = encoder,
+        .encoder = pass,
+        .queue = queue,
+        .device = device
+    };
+
     for (auto x : executionOrder) {
         x->Process(bundle);
     }
