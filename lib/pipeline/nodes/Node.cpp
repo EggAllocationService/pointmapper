@@ -25,6 +25,7 @@ void pointmapper::pipeline::Node::LazyProcess(PipelineBundle &bundle) {
         return;
     }
 
+    bool ran = false;
     for (const auto& input : inputs) {
         if (input->HasNewData()) {
             Process(bundle);
@@ -35,8 +36,15 @@ void pointmapper::pipeline::Node::LazyProcess(PipelineBundle &bundle) {
                     target->Notify();
                 }
             }
+            ran = true;
+            break;
+        }
+    }
 
-            return;
+    if (ran) {
+        // reset all inputs
+        for (const auto& input: inputs) {
+            input->Reset();
         }
     }
 }

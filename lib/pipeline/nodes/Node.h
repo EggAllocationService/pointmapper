@@ -97,6 +97,10 @@ namespace pointmapper::pipeline {
             newData = true;
         }
 
+        void Reset() {
+            newData = false;
+        }
+
         [[nodiscard]] bool HasNewData() const {
             return newData;
         }
@@ -110,6 +114,12 @@ namespace pointmapper::pipeline {
         virtual ~OutputBase() = default;
 
         virtual std::vector<InputBase*> GetTargets() = 0;
+
+        void NotifyAll() {
+            for (auto target : GetTargets()) {
+                target->Notify();
+            }
+        }
     };
 
     template<typename T>
