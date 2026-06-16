@@ -10,7 +10,7 @@
 class TestActor : public glengine::world::Actor {
 public:
     TestActor();
-    void SetDevice(DepthDevice *dev);
+    void SetNode(std::shared_ptr<pointmapper::pipeline::CreatePointCloudNode> node);
     void Update(double deltaTime) override;
     void SetRegistration(mat4 r) {
         pc_->SetRegistration(r);

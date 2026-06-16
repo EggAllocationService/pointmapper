@@ -2,22 +2,20 @@
 // Created by Kyle Smith on 2026-05-22.
 //
 
-
 #include <iostream>
-#include "../lib/realsense/RealsenseDevice.h"
-
 #include <exception>
-#include <iostream>
-#include <execinfo.h> // For backtrace() on Linux/macOS
-
-#include "../lib/PointmapperPipeline.h"
-#include <pcl/visualization/cloud_viewer.h>
+#include <execinfo.h>
 
 #include "Engine.h"
 #include "TestActor.h"
+#include "../lib/pipeline/PointmapperPipeline.h"
 #include "../lib/kinect2/Kinect2Device.h"
+#include "../lib/pipeline/nodes/CreatePointCloudNode.h"
+#include "../lib/pipeline/nodes/DepthCameraNode.h"
+#include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
+#include "../lib/pipeline/nodes/RemoveBlobsNode.h"
+#include "../lib/pipeline/nodes/GpuToCpuCopyNode.h"
 #include "../lib/rendering/pipelines.h"
-#include "../lib/registration/registration.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -31,33 +29,47 @@ void my_terminate_handler() {
 }
 
 int main() {
-    //auto kDev = new Kinect2Device();
-    //auto rDev = new RealsenseDevice();
-
-    //auto transform = registerDevices(rDev, kDev);
-
-    //std::cout << transform << std::endl;
-
-    /*mat4 transform = {
-        0.966067, 0.242103, -0.0900153, 0,
-        -0.205958, 0.932338, 0.297202, 0,
-        0.155878, -0.268577, 0.950563, 0,
-        0.000357822, 0.0639697, -0.194791, 1
-    };*/
-
-    std::set_terminate(my_terminate_handler);
-    auto engine = new glengine::Engine("Pointmapper Demo", int2(1280, 720));
+    auto engine = new glengine::Engine("Test Window", int2(1280, 720));
     engine->SetAllowNonFocusedPawnInput(true);
-    addPointmapperPipelines(engine->GetRenderer());
+    auto renderer = engine->GetRenderer();
+    addPointmapperPipelines(renderer);
+    auto pipeline = new pointmapper::pipeline::PointmapperPipeline(renderer->GetDevice(), wgpuDeviceGetQueue(renderer->GetDevice()));
+    auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
-    auto kinect = engine->SpawnActor<TestActor>();
-    kinect->GetTransform()->SetPosition({-8, 0, 5});
-    kinect->SetDevice(new Kinect2Device());
+    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
+    auto blobs = pipeline->CreateNode<pointmapper::pipeline::RemoveBlobsNode>();
 
-    //auto realsense = engine->SpawnActor<TestActor>();
-    //realsense->GetTransform()->SetPosition({8, 0, 5});
-    //realsense->SetDevice(rDev);
-    //realsense->SetRegistration(transform);
+    auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
+    cloud->camera_params->Connect(cam->params);
+    cloud->color->Connect(cam->color);
+    cloud->frameData->Connect(cam->frameData);
 
-    engine->MainLoop();
+    mask->inputDepthMap->Connect(cam->depth);
+    mask->camera_params->Connect(cam->params);
+    mask->frameData->Connect(cam->frameData);
+
+    blobs->inputDepthMap->Connect(mask->depthMap);
+    blobs->camera_params->Connect(cam->params);
+    blobs->frameData->Connect(cam->frameData);
+
+    cloud->depth_map->Connect(blobs->depthMap);
+
+    auto cpuCopy = pipeline->CreateNode<pointmapper::pipeline::GpuToCpuCopyNode>();
+    cpuCopy->cloud->Connect(cloud->cloud);
+
+    pipeline->Build();
+
+    printf("Pipeline built!!!\n");
+
+    auto test = engine->SpawnActor<TestActor>();
+
+    test->SetNode(cloud);
+
+    while (true) {
+        glfwPollEvents();
+        pipeline->Process();
+
+        engine->Update();
+        engine->Render();
+    }
 }
