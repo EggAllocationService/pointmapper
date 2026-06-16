@@ -53,6 +53,8 @@ namespace pointmapper::pipeline {
         /// Allocate buffers and such for outputs
         virtual void Hydrate() = 0;
 
+        void LazyProcess(PipelineBundle& bundle);
+
         /// Process inputs and produce outputs
         virtual void Process(PipelineBundle&) = 0;
 
@@ -90,8 +92,17 @@ namespace pointmapper::pipeline {
         [[nodiscard]] std::shared_ptr<Node> GetNode() const {
             return node->shared_from_this();
         }
+
+        void Notify() {
+            newData = true;
+        }
+
+        [[nodiscard]] bool HasNewData() const {
+            return newData;
+        }
     private:
         Node* node;
+        bool newData = false;
     };
 
     class OutputBase {
