@@ -6,12 +6,15 @@
 #include <exception>
 #include <execinfo.h>
 
+#include "Engine.h"
+#include "TestActor.h"
 #include "../lib/pipeline/PointmapperPipeline.h"
 #include "../lib/kinect2/Kinect2Device.h"
 #include "../lib/pipeline/nodes/CreatePointCloudNode.h"
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
 #include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
 #include "../lib/pipeline/nodes/RemoveBlobsNode.h"
+#include "../lib/rendering/pipelines.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -25,7 +28,11 @@ void my_terminate_handler() {
 }
 
 int main() {
-    auto pipeline = new pointmapper::pipeline::PointmapperPipeline();
+    auto engine = new glengine::Engine("Test Window", int2(1280, 720));
+    engine->SetAllowNonFocusedPawnInput(true);
+    auto renderer = engine->GetRenderer();
+    addPointmapperPipelines(renderer);
+    auto pipeline = new pointmapper::pipeline::PointmapperPipeline(renderer->GetDevice(), wgpuDeviceGetQueue(renderer->GetDevice()));
     auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
     auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
@@ -50,7 +57,15 @@ int main() {
 
     printf("Pipeline built!!!\n");
 
-    pipeline->Process();
+    auto test = engine->SpawnActor<TestActor>();
 
-    wgpuDevicePoll(pipeline->GetDevice(), true, nullptr);
+    test->SetNode(cloud);
+
+    while (true) {
+        glfwPollEvents();
+        pipeline->Process();
+
+        engine->Update();
+        engine->Render();
+    }
 }

@@ -23,7 +23,6 @@ namespace pointmapper::pipeline {
         std::shared_ptr<Output<GPUFrameData>> frameData;
     private:
         DepthDevice *device;
-        std::shared_ptr<Frame> currentFrame;
     };
 }
 

@@ -40,7 +40,7 @@ void pointmapper::pipeline::DepthCameraNode::Hydrate() {
 }
 
 void pointmapper::pipeline::DepthCameraNode::Process(PipelineBundle&) {
-    currentFrame = device->GetNextFrame();
+    auto currentFrame = device->GetNextFrame();
     if (currentFrame == nullptr) return;
 
     const auto& p = **params;
