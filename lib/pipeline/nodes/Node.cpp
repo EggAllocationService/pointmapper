@@ -19,6 +19,11 @@ void pointmapper::pipeline::Node::Build() {
 }
 
 void pointmapper::pipeline::Node::LazyProcess(PipelineBundle &bundle) {
+    if (inputs.size() == 0) {
+        // source node, always run
+        Process(bundle);
+        return;
+    }
 
     for (const auto& input : inputs) {
         if (input->HasNewData()) {
