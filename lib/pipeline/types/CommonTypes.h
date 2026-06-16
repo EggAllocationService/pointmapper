@@ -52,4 +52,8 @@ namespace pointmapper::pipeline {
         uint32_t colorHeight;
         float depth_tolerance;
     };
+
+    struct CPUPointCloud {
+        std::vector<PointXYZRGB> points;
+    };
 }

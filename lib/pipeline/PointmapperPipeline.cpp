@@ -176,14 +176,14 @@ void pointmapper::pipeline::PointmapperPipeline::Process() {
         x->LazyProcess(bundle);
     }
 
-    wgpuComputePassEncoderEnd(pass);
+    wgpuComputePassEncoderEnd(bundle.encoder);
 
-    auto cmd = wgpuCommandEncoderFinish(encoder, nullptr);
+    auto cmd = wgpuCommandEncoderFinish(bundle.cmd, nullptr);
     wgpuQueueSubmit(queue, 1, &cmd);
 
     wgpuCommandBufferRelease(cmd);
-    wgpuComputePassEncoderRelease(pass);
-    wgpuCommandEncoderRelease(encoder);
+    wgpuComputePassEncoderRelease(bundle.encoder);
+    wgpuCommandEncoderRelease(bundle.cmd);
 }
 
 WGPUBuffer pointmapper::pipeline::PointmapperPipeline::CreateBuffer(unsigned int length, WGPUBufferUsage usage) const {

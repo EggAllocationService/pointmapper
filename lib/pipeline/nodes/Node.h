@@ -19,10 +19,26 @@ namespace pointmapper::pipeline {
         WGPUQueue queue;
         WGPUDevice device;
 
+        void EndComputePass() {
+            if (encoder != nullptr) {
+                wgpuComputePassEncoderEnd(encoder);
+                encoder = nullptr;
+            }
+        }
+
         void Flush() {
-            wgpuComputePassEncoderEnd(encoder);
+            if (encoder != nullptr) {
+                wgpuComputePassEncoderEnd(encoder);
+            }
             auto buf = wgpuCommandEncoderFinish(cmd, nullptr);
             wgpuQueueSubmit(queue, 1, &buf);
+            wgpuCommandBufferRelease(buf);
+
+            if (encoder != nullptr) {
+                wgpuComputePassEncoderRelease(encoder);
+                encoder = nullptr;
+            }
+            wgpuCommandEncoderRelease(cmd);
 
             cmd = wgpuDeviceCreateCommandEncoder(device, nullptr);
             encoder = wgpuCommandEncoderBeginComputePass(cmd, nullptr);

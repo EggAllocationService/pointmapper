@@ -14,6 +14,7 @@
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
 #include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
 #include "../lib/pipeline/nodes/RemoveBlobsNode.h"
+#include "../lib/pipeline/nodes/GpuToCpuCopyNode.h"
 #include "../lib/rendering/pipelines.h"
 
 void my_terminate_handler() {
@@ -52,6 +53,9 @@ int main() {
     blobs->frameData->Connect(cam->frameData);
 
     cloud->depth_map->Connect(blobs->depthMap);
+
+    auto cpuCopy = pipeline->CreateNode<pointmapper::pipeline::GpuToCpuCopyNode>();
+    cpuCopy->cloud->Connect(cloud->cloud);
 
     pipeline->Build();
 
