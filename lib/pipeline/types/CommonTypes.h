@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace pointmapper::pipeline {
     struct GPUDepthMap {
