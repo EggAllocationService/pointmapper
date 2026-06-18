@@ -1,6 +1,5 @@
 struct Point { // layout identical to PointXYZRGB
-    pos: vec4<f32>,
-    color: u32 // need to use unpack4x8unorm, color channels are packed
+    pos: vec4<f32> // need to bitcase w to u32 then use unpack4x8unorm, color channels are packed
 }
 
 struct RenderUniforms {
@@ -54,8 +53,8 @@ fn vs(i: Vertex) -> VertexOut {
 
     var result: VertexOut;
 
-    result.pos = uniforms.projectionViewMatrix * m.m * ((i.position * 0.003) + (registration.m * pt.pos));
-    result.color = unpack4x8unorm(pt.color);
+    result.pos = uniforms.projectionViewMatrix * m.m * ((i.position * 0.003) + (registration.m * vec4f(pt.pos.xyz, 1)));
+    result.color = unpack4x8unorm(bitcast<u32>(pt.pos.w));
 
     return result;
 }

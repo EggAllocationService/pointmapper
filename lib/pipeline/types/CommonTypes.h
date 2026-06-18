@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../GPUTexture.h"
-#include "webgpu/wgpu.h"
+#include "../../common.h"
 
 #include <cstdint>
 #include <memory>

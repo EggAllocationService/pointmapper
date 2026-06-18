@@ -18,8 +18,7 @@ struct OutputInfo {
 }
 
 struct Point { // layout identical to PointXYZRGB
-    pos: vec4<f32>,
-    color: u32 // need to use unpack4x8unorm, color channels are packed
+    pos: vec4<f32> // color is stored in w, packed 4 bytes. need to bitcast to u32 and unpack to get them
 }
 
 struct MaskPushConstants {
@@ -121,10 +120,8 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
 
     if d != 0 && d < 4 {
         let oIdx = atomicAdd(&outInfo.instanceCount, 1);
-        output[oIdx].pos = vec4f(x, y, z, 1) * cc.scalar;
-
         let color = textureSampleLevel(colorTex, texSampler, uv, 0.0);
-        output[oIdx].color = pack4x8unorm(color);
+        output[oIdx].pos = vec4f(vec3f(x, y, z) * cc.scalar.xyz, bitcast<f32>(pack4x8unorm(color)));
     }
 }
 struct WorkgroupInfo {
