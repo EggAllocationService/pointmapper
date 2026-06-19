@@ -18,6 +18,8 @@
 #include "../lib/rendering/pipelines.h"
 #include <enet/enet.h>
 
+#include "../lib/pipeline/nodes/NetworkSendNode.h"
+
 void my_terminate_handler() {
     void* array[10];
     size_t size = backtrace(array, 10);
@@ -32,11 +34,8 @@ void my_terminate_handler() {
 int main() {
     enet_initialize();
 
-    auto engine = new glengine::Engine("Test Window", int2(1280, 720));
-    engine->SetAllowNonFocusedPawnInput(true);
-    auto renderer = engine->GetRenderer();
-    addPointmapperPipelines(renderer);
-    auto pipeline = new pointmapper::pipeline::PointmapperPipeline(renderer->GetDevice(), wgpuDeviceGetQueue(renderer->GetDevice()));
+    auto pipeline = new pointmapper::pipeline::PointmapperPipeline();
+
     auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
     auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
@@ -60,19 +59,15 @@ int main() {
     auto cpuCopy = pipeline->CreateNode<pointmapper::pipeline::GpuToCpuCopyNode>();
     cpuCopy->cloud->Connect(cloud->cloud);
 
+    auto output = pipeline->CreateNode<pointmapper::pipeline::NetworkSendNode>();
+    output->cloud->Connect(cpuCopy->cpuCloud);
+
     pipeline->Build();
 
     printf("Pipeline built!!!\n");
 
-    auto test = engine->SpawnActor<TestActor>();
-
-    test->SetNode(cloud);
-
     while (true) {
-        glfwPollEvents();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         pipeline->Process();
-
-        engine->Update();
-        engine->Render();
     }
 }

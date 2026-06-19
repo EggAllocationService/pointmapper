@@ -16,7 +16,9 @@ pointmapper::pipeline::NetworkSendNode::NetworkSendNode() {
         0, // no incoming bandwidth limit
         0 // no outgoing bandwidth limit
     );
+    ProcessLazily = false;
 
+    cloud = CreateInput<CPUPointCloud>();
 }
 
 pointmapper::pipeline::NetworkSendNode::~NetworkSendNode() {

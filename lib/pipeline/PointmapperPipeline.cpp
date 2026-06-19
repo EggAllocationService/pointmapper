@@ -173,7 +173,11 @@ void pointmapper::pipeline::PointmapperPipeline::Process() {
     };
 
     for (auto x : executionOrder) {
-        x->LazyProcess(bundle);
+        if (x->ProcessLazily) {
+            x->LazyProcess(bundle);
+        } else {
+            x->Process(bundle);
+        }
     }
 
     wgpuComputePassEncoderEnd(bundle.encoder);
