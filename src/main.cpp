@@ -7,7 +7,7 @@
 #include <execinfo.h>
 
 #include "Engine.h"
-#include "TestActor.h"
+#include "../vis/TestActor.h"
 #include "../lib/pipeline/PointmapperPipeline.h"
 #include "../lib/kinect2/Kinect2Device.h"
 #include "../lib/pipeline/nodes/CreatePointCloudNode.h"

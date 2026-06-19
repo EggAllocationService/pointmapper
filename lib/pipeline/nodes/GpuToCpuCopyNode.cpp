@@ -42,6 +42,8 @@ namespace pointmapper::pipeline {
             16,
             WGPUBufferUsage_CopyDst | WGPUBufferUsage_MapRead);
 
+        (*cpuCloud)->maximumPointCount = input->maximumPointCount;
+        (*cpuCloud)->points.reserve(input->maximumPointCount);
         cpuCloud->MarkReady();
     }
 

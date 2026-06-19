@@ -13,7 +13,7 @@
 namespace pointmapper::pipeline {
     class NetworkReceiveNode : public Node {
     public:
-        NetworkReceiveNode(std::string_view remoteAddress);
+        NetworkReceiveNode(std::string_view remoteAddress, uint16_t port);
         ~NetworkReceiveNode() override;
 
         // Non-copyable

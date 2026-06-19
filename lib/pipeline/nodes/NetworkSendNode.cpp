@@ -16,6 +16,8 @@ pointmapper::pipeline::NetworkSendNode::NetworkSendNode() {
         0, // no incoming bandwidth limit
         0 // no outgoing bandwidth limit
     );
+
+    enet_host_compress_with_range_coder(server);
     ProcessLazily = false;
 
     cloud = CreateInput<CPUPointCloud>();
@@ -30,7 +32,7 @@ void pointmapper::pipeline::NetworkSendNode::Hydrate() {
 
 void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
     ENetEvent event;
-    enet_host_service(server, &event, 0);
+    enet_host_service(server, &event, 1);
 
     auto info = net::NetInfoPacket {
         .maxPoints = net::to_network_order((*cloud)->maximumPointCount)
@@ -40,6 +42,8 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
         case ENET_EVENT_TYPE_CONNECT:
             printf("Client connected from %x:%u\n", event.peer->address.host, event.peer->address.port);
             // send the info packet immediately
+
+            printf("max point count: %u\n", (*cloud)->maximumPointCount);
             packet = enet_packet_create(&info, sizeof(info), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 1, packet);
             enet_host_flush(server);
@@ -58,8 +62,10 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
 
     if (cloud->HasNewData()) {
         auto& points = *(*cloud).operator->();
+        printf("Sending %lu points\n", points.points.size());
+        auto size = sizeof(net::NetHeader) + (sizeof(PointXYZRGB) * points.points.size());
 
-        auto packet = enet_packet_create(nullptr, sizeof(net::NetHeader) + (sizeof(PointXYZRGB) * points.points.size()), 0);
+        auto packet = enet_packet_create(nullptr, size, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT | ENET_PACKET_FLAG_UNSEQUENCED);
 
         auto header = net::NetHeader{
             .magic = {'C', 'L', 'D'},

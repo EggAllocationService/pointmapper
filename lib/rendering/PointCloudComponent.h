@@ -28,7 +28,7 @@ public:
     void Render(const glengine::pipeline::wgpu::RenderBundle &, glengine::MatrixStack &stack) override;
 
     void SetDevice(DepthDevice* dev);
-    void SetCloudNode(const std::shared_ptr<pointmapper::pipeline::CreatePointCloudNode>& node);
+    void SetCloudNode(const std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>>& node);
 
     void SetRegistration(mat4 transform);
 
@@ -38,7 +38,7 @@ private:
     glengine::pipeline::wgpu::GPUPointer<IndirectRenderParams> indirectParams;
     glengine::pipeline::wgpu::GPUPointer<RegistrationInfo> registrationInfo;
 
-    std::shared_ptr<pointmapper::pipeline::CreatePointCloudNode> cloudNode;
+    std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>> cloudNode;
 
     std::shared_ptr<glengine::pipeline::wgpu::GPUMesh> mesh;
     DepthDevice *depthDevice;

@@ -44,7 +44,9 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/pipeline/nodes/NetworkSendNode.h
         lib/pipeline/net.cpp
         lib/pipeline/nodes/NetworkReceiveNode.cpp
-        lib/pipeline/nodes/NetworkReceiveNode.h)
+        lib/pipeline/nodes/NetworkReceiveNode.h
+        lib/pipeline/nodes/CpuToGpuCopyNode.cpp
+        lib/pipeline/nodes/CpuToGpuCopyNode.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -105,11 +107,8 @@ else()
     target_link_libraries(pointmapper PUBLIC webgpu)
 endif()
 
-if(VISUALIZATION)
-    add_executable(testpoints src/main.cpp
-            src/TestActor.cpp
-            src/TestActor.h)
-endif()
+add_executable(testpoints src/main.cpp)
+
 
 set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
 set(OpenMP_C_LIB_NAMES "omp")
@@ -127,8 +126,14 @@ find_package(Eigen3 REQUIRED)
 
 target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${PCL_LIBRARIES} PkgConfig::ENET)
 target_include_directories(pointmapper PUBLIC ${PCL_INCLUDE_DIRS})
+target_link_libraries(testpoints PUBLIC pointmapper)
 
 if(VISUALIZATION)
-    target_link_libraries(testpoints PUBLIC pointmapper)
+    add_executable(testvis
+            vis/TestActor.cpp
+            vis/TestActor.h
+            vis/main.cpp
+    )
+    target_link_libraries(testvis PUBLIC pointmapper)
 endif()
 

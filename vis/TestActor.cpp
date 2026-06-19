@@ -29,7 +29,7 @@ TestActor::TestActor() {
     m->material->Ambient = float4(0.3, 0.3, 0.3, 1.0);
 }
 
-void TestActor::SetNode(std::shared_ptr<pointmapper::pipeline::CreatePointCloudNode>  node) {
+void TestActor::SetNode(std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>> node) {
     text_->SetText("Connected");
 
     pc_->SetCloudNode(node);

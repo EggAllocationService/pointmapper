@@ -8,10 +8,11 @@
 
 #include "../net.h"
 
-pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view remoteAddress) {
+pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view remoteAddress, uint16_t port) {
     std::string remote(remoteAddress);
     ENetAddress address;
-    enet_address_set_host(&address, remote.c_str());
+    address.port = port;
+    enet_address_set_host_ip(&address, remote.c_str());
 
     client = enet_host_create(
       nullptr,
@@ -21,8 +22,12 @@ pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view r
       0
     );
     assert(client);
+    enet_host_compress_with_range_coder(client);
 
     server = enet_host_connect(client, &address, 2, 0);
+
+
+    cloud = CreateOutput<CPUPointCloud>();
 
     ProcessLazily = false;
 }
@@ -56,9 +61,8 @@ void pointmapper::pipeline::NetworkReceiveNode::Hydrate() {
 
 void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
     ENetEvent event;
-    enet_host_service(client, &event, 0);
+    enet_host_service(client, &event, 1);
     if (event.type == ENET_EVENT_TYPE_RECEIVE && event.channelID == 0) {
-        printf("Receiving point data\n");
         auto packet = event.packet;
         auto header = *reinterpret_cast<net::NetHeader*>(packet->data);
         // verify header
@@ -76,16 +80,22 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
 
         auto pointCount = dataLen / sizeof(PointXYZRGB);
         if (pointCount > (*cloud)->maximumPointCount) {
-            printf("Recieved pointcloud exceeds maximum point count! (%lu/%d)\n", pointCount, (*cloud)->maximumPointCount);
+            printf("Received pointcloud exceeds maximum point count! (%lu/%d)\n", pointCount, (*cloud)->maximumPointCount);
             return;
         }
 
         (*cloud)->points.resize(pointCount);
         memcpy((*cloud)->points.data(), data, dataLen);
 
+        enet_packet_destroy(packet);
         cloud->NotifyAll();
     } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
         printf("Disconnected from server!!\n");
+    }
+
+    enet_host_service(client, &event, 0);
+    while (event.type != ENET_EVENT_TYPE_NONE) {
+        enet_host_service(client, &event, 0);
     }
 }
 

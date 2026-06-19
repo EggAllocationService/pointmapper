@@ -42,7 +42,7 @@ void PointCloudComponent::Update(double deltaTime) {
     auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
     wgpuCommandEncoderCopyBufferToBuffer(
         encoder,
-        (*cloudNode->cloud)->pointCount,
+        (*cloudNode)->pointCount,
         sizeof(uint32_t),
         indirectParams,
         sizeof(uint32_t),
@@ -64,11 +64,11 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
     depthDevice = dev;
 }
 
-void PointCloudComponent::SetCloudNode(const std::shared_ptr<pointmapper::pipeline::CreatePointCloudNode>& node) {
+void PointCloudComponent::SetCloudNode(const std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>>& node) {
     cloudNode = node;
 
     WGPUBindGroupEntry pointsEntry = WGPU_BIND_GROUP_ENTRY_INIT;
-    pointsEntry.buffer = (*cloudNode->cloud)->points;
+    pointsEntry.buffer = (*cloudNode)->points;
 
     cloudRenderer->SetBinding(1, pointsEntry);
     cloudRenderer->CommitBindings();
