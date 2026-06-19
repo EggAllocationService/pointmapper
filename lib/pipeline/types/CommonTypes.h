@@ -56,5 +56,6 @@ namespace pointmapper::pipeline {
 
     struct CPUPointCloud {
         std::vector<PointXYZRGB> points;
+        unsigned int maximumPointCount;
     };
 }

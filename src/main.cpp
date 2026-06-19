@@ -16,6 +16,7 @@
 #include "../lib/pipeline/nodes/RemoveBlobsNode.h"
 #include "../lib/pipeline/nodes/GpuToCpuCopyNode.h"
 #include "../lib/rendering/pipelines.h"
+#include <enet/enet.h>
 
 void my_terminate_handler() {
     void* array[10];
@@ -29,6 +30,8 @@ void my_terminate_handler() {
 }
 
 int main() {
+    enet_initialize();
+
     auto engine = new glengine::Engine("Test Window", int2(1280, 720));
     engine->SetAllowNonFocusedPawnInput(true);
     auto renderer = engine->GetRenderer();

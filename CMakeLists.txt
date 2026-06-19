@@ -39,7 +39,12 @@ add_library(pointmapper SHARED lib/library.cpp
         lib/pipeline/nodes/RemoveBlobsNode.h
         lib/pipeline/nodes/RemoveBlobsNode.cpp
         lib/pipeline/nodes/GpuToCpuCopyNode.h
-        lib/pipeline/nodes/GpuToCpuCopyNode.cpp)
+        lib/pipeline/nodes/GpuToCpuCopyNode.cpp
+        lib/pipeline/nodes/NetworkSendNode.cpp
+        lib/pipeline/nodes/NetworkSendNode.h
+        lib/pipeline/net.cpp
+        lib/pipeline/nodes/NetworkReceiveNode.cpp
+        lib/pipeline/nodes/NetworkReceiveNode.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -113,12 +118,14 @@ set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
 set(OpenMP_CXX_LIB_NAMES "omp")
 set(OpenMP_omp_LIBRARY omp)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(ENET REQUIRED libenet IMPORTED_TARGET)
 target_include_directories(pointmapper PUBLIC "/opt/homebrew/opt/libomp/include" "/usr/local/opt/libomp/include")
 target_link_directories(pointmapper PUBLIC "/opt/homebrew/opt/libomp/lib" "/usr/local/opt/libomp/lib")
 find_package(PCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${PCL_LIBRARIES})
+target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${PCL_LIBRARIES} PkgConfig::ENET)
 target_include_directories(pointmapper PUBLIC ${PCL_INCLUDE_DIRS})
 
 if(VISUALIZATION)

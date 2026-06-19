@@ -77,6 +77,9 @@ namespace pointmapper::pipeline {
         [[nodiscard]] bool WasBuilt() const {
             return ready;
         }
+
+        /// If true, Process() will only be called if an input has a new value.
+        bool ProcessLazily = true;
     protected:
         template<typename T> std::shared_ptr<Output<T>> CreateOutput() {
             auto result = std::make_shared<Output<T>>();

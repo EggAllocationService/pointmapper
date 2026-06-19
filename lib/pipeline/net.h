@@ -1,0 +1,32 @@
+#pragma once
+#include <concepts>
+#include <bit>
+
+namespace pointmapper::pipeline::net {
+    template<std::integral T>
+    T reverse(T val) {
+        static_assert(false, "No implementation to swap T");
+        return 0;
+    }
+
+    template<>
+    uint32_t reverse<uint32_t>(uint32_t val);
+
+    template <std::integral T>
+    constexpr T to_network_order(T value) {
+        if constexpr (std::endian::native == std::endian::little) {
+            return reverse(value);
+        }
+        return value;
+    }
+
+    struct NetHeader {
+        char magic[3];
+        char kind;
+    };
+
+    struct NetInfoPacket {
+        uint32_t maxPoints;
+    };
+
+}

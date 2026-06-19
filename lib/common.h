@@ -13,7 +13,7 @@
 typedef void* PointmapperDeviceCloud;
 
 
-struct alignas(16) PointXYZRGB {
+struct PointXYZRGB {
     float x, y, z;
     union {
         float w;
