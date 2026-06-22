@@ -21,6 +21,7 @@ pointmapper::pipeline::NetworkSendNode::NetworkSendNode() {
     ProcessLazily = false;
 
     cloud = CreateInput<CPUPointCloud>();
+    currentId = 1;
 }
 
 pointmapper::pipeline::NetworkSendNode::~NetworkSendNode() {
@@ -63,20 +64,26 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
     if (cloud->HasNewData()) {
         auto& points = *(*cloud).operator->();
         printf("Sending %lu points\n", points.points.size());
-        auto size = sizeof(net::NetHeader) + (sizeof(PointXYZRGB) * points.points.size());
+        for (uint32_t i = 0; i < points.points.size(); i += NET_MAX_PACKET_SIZE) {
+            auto numPoints = std::min((points.points.size() - i), NET_MAX_PACKET_SIZE);
+            auto size = sizeof(net::NetHeader) + numPoints * sizeof(PointXYZRGB);
 
-        auto packet = enet_packet_create(nullptr, size, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT | ENET_PACKET_FLAG_UNSEQUENCED);
+            auto packet = enet_packet_create(nullptr, size, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT | ENET_PACKET_FLAG_UNSEQUENCED);
 
-        auto header = net::NetHeader{
-            .magic = {'C', 'L', 'D'},
-            .kind = 'P' // P for points
-        };
-        memcpy(packet->data, &header, sizeof(header));
+            auto header = net::NetHeader{
+                .magic = {'C', 'L', 'D'},
+                .kind = 'P', // P for points
+                .cloud_id = net::to_network_order(currentId),
+                .total_length = net::to_network_order(static_cast<uint32_t>(points.points.size())),
+                .packet_length =  net::to_network_order(static_cast<uint32_t>(numPoints))
+            };
+            memcpy(packet->data, &header, sizeof(header));
 
-        // copy points
-        memcpy(packet->data + sizeof(header), points.points.data(), points.points.size() * sizeof(PointXYZRGB));
+            // copy points
+            memcpy(packet->data + sizeof(header), points.points.data() + i, numPoints * sizeof(PointXYZRGB));
 
-        enet_host_broadcast(server, 0, packet);
+            enet_host_broadcast(server, 0, packet);
+        }
 
         enet_host_flush(server);
     }

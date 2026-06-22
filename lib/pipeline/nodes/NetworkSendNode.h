@@ -30,6 +30,7 @@ namespace pointmapper::pipeline {
 
     private:
         ENetHost* server;
+        uint32_t currentId;
     };
 }
 

@@ -65,10 +65,27 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
     if (event.type == ENET_EVENT_TYPE_RECEIVE && event.channelID == 0) {
         auto packet = event.packet;
         auto header = *reinterpret_cast<net::NetHeader*>(packet->data);
+        header.cloud_id = net::to_network_order(header.cloud_id);
+        header.packet_length = net::to_network_order(header.packet_length);
+        header.total_length = net::to_network_order(header.total_length);
         // verify header
-        if (header.kind != 'P') {
+        if (header.kind != 'P' || header.total_length > NET_MAX_PACKET_SIZE) {
             printf("Malformed packet!\n");
+            enet_packet_destroy(packet);
             return;
+        }
+
+        if (header.cloud_id < receiveId) {
+            // out of order packet, ignore
+            enet_packet_destroy(packet);
+            return;
+        }
+
+        if (header.cloud_id > this->receiveId) {
+            // new packet series
+            (*cloud)->points.reserve(header.total_length);
+            (*cloud)->points.clear();
+
         }
 
         auto data = packet->data + sizeof(net::NetHeader);
@@ -84,11 +101,13 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             return;
         }
 
-        (*cloud)->points.resize(pointCount);
-        memcpy((*cloud)->points.data(), data, dataLen);
+        memcpy((*cloud)->points.data() + (*cloud)->points.size(), data, dataLen);
+        (*cloud)->points.resize((*cloud)->points.size() + pointCount);
 
         enet_packet_destroy(packet);
-        cloud->NotifyAll();
+        if ((*cloud)->points.size() == header.total_length) {
+            cloud->NotifyAll();
+        }
     } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
         printf("Disconnected from server!!\n");
     }

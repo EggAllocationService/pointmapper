@@ -28,6 +28,7 @@ namespace pointmapper::pipeline {
     private:
         ENetHost *client;
         ENetPeer *server;
+        uint32_t receiveId;
     };
 }
 
