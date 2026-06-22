@@ -85,19 +85,21 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             // new packet series
             (*cloud)->points.reserve(header.total_length);
             (*cloud)->points.clear();
-
+            this->receiveId = header.cloud_id;
         }
 
         auto data = packet->data + sizeof(net::NetHeader);
         auto dataLen = packet->dataLength - sizeof(net::NetHeader);
         if (dataLen % sizeof(PointXYZRGB) != 0) {
             printf("Packet does not contain an integral amount of points!\n");
+            enet_packet_destroy(packet);
             return;
         }
 
         auto pointCount = dataLen / sizeof(PointXYZRGB);
         if (pointCount > (*cloud)->maximumPointCount) {
             printf("Received pointcloud exceeds maximum point count! (%lu/%d)\n", pointCount, (*cloud)->maximumPointCount);
+            enet_packet_destroy(packet);
             return;
         }
 
