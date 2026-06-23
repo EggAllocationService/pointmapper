@@ -63,7 +63,7 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
 
     if (cloud->HasNewData()) {
         auto& points = *(*cloud).operator->();
-        printf("Sending %lu points\n", points.points.size());
+        //printf("Sending %lu points\n", points.points.size());
         for (uint32_t i = 0; i < points.points.size(); i += NET_MAX_PACKET_SIZE) {
             auto numPoints = std::min((points.points.size() - i), NET_MAX_PACKET_SIZE);
             auto size = sizeof(net::NetHeader) + numPoints * sizeof(PointXYZRGB);
@@ -84,7 +84,7 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
 
             enet_host_broadcast(server, 0, packet);
         }
-
+        currentId++;
         enet_host_flush(server);
     }
 }

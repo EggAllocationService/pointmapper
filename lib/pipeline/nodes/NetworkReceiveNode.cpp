@@ -60,63 +60,63 @@ void pointmapper::pipeline::NetworkReceiveNode::Hydrate() {
 }
 
 void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
-    ENetEvent event;
-    enet_host_service(client, &event, 1);
-    if (event.type == ENET_EVENT_TYPE_RECEIVE && event.channelID == 0) {
-        auto packet = event.packet;
-        auto header = *reinterpret_cast<net::NetHeader*>(packet->data);
-        header.cloud_id = net::to_network_order(header.cloud_id);
-        header.packet_length = net::to_network_order(header.packet_length);
-        header.total_length = net::to_network_order(header.total_length);
-        // verify header
-        if (header.kind != 'P' || header.total_length > NET_MAX_PACKET_SIZE) {
-            printf("Malformed packet!\n");
+    while (true) {
+        ENetEvent event;
+        enet_host_service(client, &event, 1);
+        if (event.type == ENET_EVENT_TYPE_RECEIVE && event.channelID == 0) {
+            auto packet = event.packet;
+            auto header = *reinterpret_cast<net::NetHeader*>(packet->data);
+            header.cloud_id = net::to_network_order(header.cloud_id);
+            header.packet_length = net::to_network_order(header.packet_length);
+            header.total_length = net::to_network_order(header.total_length);
+            // verify header
+            if (header.kind != 'P' || header.total_length > (*cloud)->maximumPointCount || header.packet_length > NET_MAX_PACKET_SIZE) {
+                printf("Malformed packet!");
+                enet_packet_destroy(packet);
+                return;
+            }
+
+            if (header.cloud_id < receiveId) {
+                // out of order packet, ignore
+                enet_packet_destroy(packet);
+                return;
+            }
+            //auto current = (*cloud)->points.size();
+            //printf("Recv cloud=%u target=%u segment=%u total=%lu\n", header.cloud_id, header.total_length, header.packet_length, current);
+            if (header.cloud_id > this->receiveId) {
+                // new packet series
+                (*cloud)->points.reserve(header.total_length);
+                (*cloud)->points.clear();
+                this->receiveId = header.cloud_id;
+            }
+
+            auto data = packet->data + sizeof(net::NetHeader);
+            auto dataLen = packet->dataLength - sizeof(net::NetHeader);
+            if (dataLen % sizeof(PointXYZRGB) != 0) {
+                printf("Packet does not contain an integral amount of points!\n");
+                enet_packet_destroy(packet);
+                return;
+            }
+
+            auto pointCount = dataLen / sizeof(PointXYZRGB);
+            if (pointCount > (*cloud)->maximumPointCount) {
+                printf("Received pointcloud exceeds maximum point count! (%lu/%d)\n", pointCount, (*cloud)->maximumPointCount);
+                enet_packet_destroy(packet);
+                return;
+            }
+
+            memcpy((*cloud)->points.data() + (*cloud)->points.size(), data, dataLen);
+            (*cloud)->points.resize((*cloud)->points.size() + pointCount);
+
             enet_packet_destroy(packet);
-            return;
+            if ((*cloud)->points.size() == header.total_length) {
+                cloud->NotifyAll();
+            }
+        } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
+            printf("Disconnected from server!!\n");
+        } else if (event.type == ENET_EVENT_TYPE_NONE) {
+            break;
         }
-
-        if (header.cloud_id < receiveId) {
-            // out of order packet, ignore
-            enet_packet_destroy(packet);
-            return;
-        }
-
-        if (header.cloud_id > this->receiveId) {
-            // new packet series
-            (*cloud)->points.reserve(header.total_length);
-            (*cloud)->points.clear();
-            this->receiveId = header.cloud_id;
-        }
-
-        auto data = packet->data + sizeof(net::NetHeader);
-        auto dataLen = packet->dataLength - sizeof(net::NetHeader);
-        if (dataLen % sizeof(PointXYZRGB) != 0) {
-            printf("Packet does not contain an integral amount of points!\n");
-            enet_packet_destroy(packet);
-            return;
-        }
-
-        auto pointCount = dataLen / sizeof(PointXYZRGB);
-        if (pointCount > (*cloud)->maximumPointCount) {
-            printf("Received pointcloud exceeds maximum point count! (%lu/%d)\n", pointCount, (*cloud)->maximumPointCount);
-            enet_packet_destroy(packet);
-            return;
-        }
-
-        memcpy((*cloud)->points.data() + (*cloud)->points.size(), data, dataLen);
-        (*cloud)->points.resize((*cloud)->points.size() + pointCount);
-
-        enet_packet_destroy(packet);
-        if ((*cloud)->points.size() == header.total_length) {
-            cloud->NotifyAll();
-        }
-    } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
-        printf("Disconnected from server!!\n");
-    }
-
-    enet_host_service(client, &event, 0);
-    while (event.type != ENET_EVENT_TYPE_NONE) {
-        enet_host_service(client, &event, 0);
     }
 }
 
