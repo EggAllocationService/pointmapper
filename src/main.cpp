@@ -16,7 +16,6 @@
 #include "../lib/pipeline/nodes/RemoveBlobsNode.h"
 #include "../lib/pipeline/nodes/GpuToCpuCopyNode.h"
 #include "../lib/rendering/pipelines.h"
-#include <enet/enet.h>
 
 #include "../lib/pipeline/nodes/NetworkSendNode.h"
 

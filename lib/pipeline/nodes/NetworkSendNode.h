@@ -4,7 +4,7 @@
 
 #ifndef POINTMAPPER_NETWORKSENDNODE_H
 #define POINTMAPPER_NETWORKSENDNODE_H
-#include <enet/enet.h>
+#include "../enet.h"
 
 #include "Node.h"
 #include "../types/CommonTypes.h"

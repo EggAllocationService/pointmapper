@@ -10,9 +10,9 @@
 
 pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view remoteAddress, uint16_t port) {
     std::string remote(remoteAddress);
-    ENetAddress address;
+    ENetAddress address = {0};
     address.port = port;
-    enet_address_set_host_ip(&address, remote.c_str());
+    address.host = in6addr_loopback;
 
     client = enet_host_create(
       nullptr,
@@ -21,8 +21,10 @@ pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view r
       0,
       0
     );
+
+    client->mtu = 60000;
+
     assert(client);
-    enet_host_compress_with_range_coder(client);
 
     server = enet_host_connect(client, &address, 2, 0);
 
@@ -30,16 +32,19 @@ pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view r
     cloud = CreateOutput<CPUPointCloud>();
 
     ProcessLazily = false;
+    readCount = 0;
 }
 
 void pointmapper::pipeline::NetworkReceiveNode::Hydrate() {
     ENetEvent event;
+    enet_host_service(client, &event, 7000);
+    if (event.type != ENET_EVENT_TYPE_CONNECT) {
+        printf("Failed to connect to server (%u)\n", event.type);
+        return;
+    }
+
     while (true) {
         enet_host_service(client, &event, 10);
-        if (event.type == ENET_EVENT_TYPE_CONNECT) {
-            printf("Connected to server\n");
-            continue;
-        }
 
         if (event.type == ENET_EVENT_TYPE_RECEIVE) {
             if (event.channelID != 1 || event.packet->dataLength != sizeof(net::NetInfoPacket)) {
@@ -60,10 +65,12 @@ void pointmapper::pipeline::NetworkReceiveNode::Hydrate() {
 }
 
 void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
+    int received = 0;
     while (true) {
         ENetEvent event;
-        enet_host_service(client, &event, 1);
+        enet_host_service(client, &event, 0);
         if (event.type == ENET_EVENT_TYPE_RECEIVE && event.channelID == 0) {
+            received++;
             auto packet = event.packet;
             auto header = *reinterpret_cast<net::NetHeader*>(packet->data);
             header.cloud_id = net::to_network_order(header.cloud_id);
@@ -81,13 +88,12 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
                 enet_packet_destroy(packet);
                 return;
             }
-            //auto current = (*cloud)->points.size();
-            //printf("Recv cloud=%u target=%u segment=%u total=%lu\n", header.cloud_id, header.total_length, header.packet_length, current);
+            //printf("Recv cloud=%u target=%u segment=%u total=%u\n", header.cloud_id, header.total_length, header.packet_length, readCount);
             if (header.cloud_id > this->receiveId) {
                 // new packet series
-                (*cloud)->points.reserve(header.total_length);
-                (*cloud)->points.clear();
+                (*cloud)->points.resize(header.total_length);
                 this->receiveId = header.cloud_id;
+                readCount = 0;
             }
 
             auto data = packet->data + sizeof(net::NetHeader);
@@ -105,18 +111,24 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
                 return;
             }
 
-            memcpy((*cloud)->points.data() + (*cloud)->points.size(), data, dataLen);
-            (*cloud)->points.resize((*cloud)->points.size() + pointCount);
+            memcpy((*cloud)->points.data() + readCount, data, dataLen);
+            readCount += header.packet_length;
 
             enet_packet_destroy(packet);
-            if ((*cloud)->points.size() == header.total_length) {
+            if (readCount == header.total_length) {
                 cloud->NotifyAll();
+                break;
             }
+
         } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
             printf("Disconnected from server!!\n");
         } else if (event.type == ENET_EVENT_TYPE_NONE) {
             break;
         }
+    }
+
+    if (received > 0) {
+        //printf("Received %d packets\n", received);
     }
 }
 

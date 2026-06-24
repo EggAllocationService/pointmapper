@@ -5,7 +5,7 @@
 #ifndef POINTMAPPER_NETWORKRECIEVENODE_H
 #define POINTMAPPER_NETWORKRECIEVENODE_H
 #include <string_view>
-#include <enet/enet.h>
+#include "../enet.h"
 
 #include "Node.h"
 #include "../types/CommonTypes.h"
@@ -29,6 +29,7 @@ namespace pointmapper::pipeline {
         ENetHost *client;
         ENetPeer *server;
         uint32_t receiveId;
+        uint32_t readCount;
     };
 }
 

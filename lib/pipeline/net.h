@@ -2,7 +2,7 @@
 #include <concepts>
 #include <bit>
 
-#define NET_MAX_PACKET_SIZE 1000ul
+#define NET_MAX_PACKET_SIZE 100000ul
 
 namespace pointmapper::pipeline::net {
     template<std::integral T>
