@@ -33,7 +33,7 @@ namespace pointmapper::pipeline {
         void Process(PipelineBundle &) override;
 
         std::shared_ptr<Output<CPUPointCloud>> cloud;
-        net::ReceiveBuffer buffers[3];
+        net::ReceiveBuffer buffers[5];
     private:
         ENetHost *client;
         ENetPeer *server;
