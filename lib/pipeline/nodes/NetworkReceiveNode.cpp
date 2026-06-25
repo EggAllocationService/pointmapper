@@ -4,7 +4,6 @@
 
 #include "NetworkReceiveNode.h"
 
-#include <algorithm>
 #include <cassert>
 
 #include "../net.h"
@@ -98,16 +97,8 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
                 continue;
             }
 
-            // drop packets for clouds we've already moved past
-            uint32_t minBuffered = UINT32_MAX;
-            bool hasBuffered = false;
-            for (int i = 0; i < 3; i++) {
-                if (buffers[i].cloudId != 0) {
-                    hasBuffered = true;
-                    minBuffered = std::min(minBuffered, buffers[i].cloudId);
-                }
-            }
-            if (hasBuffered && header.cloud_id < minBuffered) {
+            // drop packets for clouds we've already presented
+            if (header.cloud_id <= lastPresentedCloudId) {
                 enet_packet_destroy(packet);
                 continue;
             }
@@ -175,29 +166,35 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
 
             enet_packet_destroy(packet);
 
-            // emit completed clouds in order, skipping any dropped gaps
-            while (true) {
-                int oldestSlot = -1;
-                uint32_t oldestId = UINT32_MAX;
-                for (int i = 0; i < 3; i++) {
-                    if (buffers[i].cloudId != 0 && buffers[i].cloudId < oldestId) {
-                        oldestId = buffers[i].cloudId;
-                        oldestSlot = i;
-                    }
+            // find the highest-id completed cloud and present it if it's newer
+            int completedSlot = -1;
+            uint32_t completedId = lastPresentedCloudId;
+            for (int i = 0; i < 3; i++) {
+                if (buffers[i].cloudId != 0 &&
+                    buffers[i].cloudId > completedId &&
+                    buffers[i].received >= buffers[i].totalLength) {
+                    completedId = buffers[i].cloudId;
+                    completedSlot = i;
                 }
-                if (oldestSlot == -1) {
-                    break;
-                }
-                if (buffers[oldestSlot].received < buffers[oldestSlot].totalLength) {
-                    break;
-                }
-
-                auto& buf = buffers[oldestSlot];
+            }
+            if (completedSlot != -1) {
+                auto& buf = buffers[completedSlot];
                 (*cloud)->points = std::move(buf.points);
+                lastPresentedCloudId = buf.cloudId;
                 buf.cloudId = 0;
                 buf.totalLength = 0;
                 buf.received = 0;
                 cloud->NotifyAll();
+
+                // discard all older/stale buffered clouds
+                for (int i = 0; i < 3; i++) {
+                    if (buffers[i].cloudId != 0 && buffers[i].cloudId <= lastPresentedCloudId) {
+                        buffers[i].cloudId = 0;
+                        buffers[i].totalLength = 0;
+                        buffers[i].received = 0;
+                        buffers[i].points.clear();
+                    }
+                }
             }
         } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
             printf("Disconnected from server!!\n");
