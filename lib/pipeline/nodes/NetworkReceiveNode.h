@@ -9,6 +9,7 @@
 
 #include "Node.h"
 #include "../types/CommonTypes.h"
+#include "../net.h"
 
 namespace pointmapper::pipeline {
     namespace net {
@@ -33,7 +34,7 @@ namespace pointmapper::pipeline {
         void Process(PipelineBundle &) override;
 
         std::shared_ptr<Output<CPUPointCloud>> cloud;
-        net::ReceiveBuffer buffers[5];
+        net::ReceiveBuffer buffers[NET_RECEIVE_BUFFER_COUNT];
     private:
         ENetHost *client;
         ENetPeer *server;

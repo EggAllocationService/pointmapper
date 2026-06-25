@@ -105,14 +105,14 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
 
             // find or allocate a receive buffer for this cloud
             int slot = -1;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < NET_RECEIVE_BUFFER_COUNT; i++) {
                 if (buffers[i].cloudId == header.cloud_id) {
                     slot = i;
                     break;
                 }
             }
             if (slot == -1) {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < NET_RECEIVE_BUFFER_COUNT; i++) {
                     if (buffers[i].cloudId == 0) {
                         slot = i;
                         break;
@@ -122,7 +122,7 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             if (slot == -1) {
                 // all buffers in use; drop the oldest cloud to make room
                 int oldestSlot = 0;
-                for (int i = 1; i < 5; i++) {
+                for (int i = 1; i < NET_RECEIVE_BUFFER_COUNT; i++) {
                     if (buffers[i].cloudId < buffers[oldestSlot].cloudId) {
                         oldestSlot = i;
                     }
@@ -169,7 +169,7 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             // find the highest-id completed cloud and present it if it's newer
             int completedSlot = -1;
             uint32_t completedId = lastPresentedCloudId;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < NET_RECEIVE_BUFFER_COUNT; i++) {
                 if (buffers[i].cloudId != 0 &&
                     buffers[i].cloudId > completedId &&
                     buffers[i].received >= buffers[i].totalLength) {
@@ -187,7 +187,7 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
                 cloud->NotifyAll();
 
                 // discard all older/stale buffered clouds
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < NET_RECEIVE_BUFFER_COUNT; i++) {
                     if (buffers[i].cloudId != 0 && buffers[i].cloudId <= lastPresentedCloudId) {
                         buffers[i].cloudId = 0;
                         buffers[i].totalLength = 0;

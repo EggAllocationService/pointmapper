@@ -3,6 +3,7 @@
 #include <bit>
 
 #define NET_MAX_PACKET_SIZE 1000ul
+#define NET_RECEIVE_BUFFER_COUNT 5
 
 namespace pointmapper::pipeline::net {
     template<std::integral T>
