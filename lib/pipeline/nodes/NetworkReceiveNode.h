@@ -15,6 +15,7 @@ namespace pointmapper::pipeline {
         struct ReceiveBuffer {
             std::vector<PointXYZRGB> points;
             uint32_t cloudId = 0;
+            uint32_t totalLength = 0;
             uint32_t received = 0;
         };
     }
@@ -36,8 +37,6 @@ namespace pointmapper::pipeline {
     private:
         ENetHost *client;
         ENetPeer *server;
-        uint32_t receiveId;
-        uint32_t readCount;
     };
 }
 

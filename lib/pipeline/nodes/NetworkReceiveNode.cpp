@@ -4,6 +4,7 @@
 
 #include "NetworkReceiveNode.h"
 
+#include <algorithm>
 #include <cassert>
 
 #include "../net.h"
@@ -32,7 +33,6 @@ pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view r
     cloud = CreateOutput<CPUPointCloud>();
 
     ProcessLazily = false;
-    readCount = 0;
 }
 
 void pointmapper::pipeline::NetworkReceiveNode::Hydrate() {
@@ -80,20 +80,7 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             if (header.kind != 'P' || header.total_length > (*cloud)->maximumPointCount || header.packet_length > NET_MAX_PACKET_SIZE) {
                 printf("Malformed packet!");
                 enet_packet_destroy(packet);
-                return;
-            }
-
-            if (header.cloud_id < receiveId) {
-                // out of order packet, ignore
-                enet_packet_destroy(packet);
-                return;
-            }
-            //printf("Recv cloud=%u target=%u segment=%u total=%u\n", header.cloud_id, header.total_length, header.packet_length, readCount);
-            if (header.cloud_id > this->receiveId) {
-                // new packet series
-                (*cloud)->points.resize(header.total_length);
-                this->receiveId = header.cloud_id;
-                readCount = 0;
+                continue;
             }
 
             auto data = packet->data + sizeof(net::NetHeader);
@@ -101,21 +88,117 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             if (dataLen % sizeof(PointXYZRGB) != 0) {
                 printf("Packet does not contain an integral amount of points!\n");
                 enet_packet_destroy(packet);
-                return;
+                continue;
             }
 
             auto pointCount = dataLen / sizeof(PointXYZRGB);
             if (pointCount > (*cloud)->maximumPointCount) {
                 printf("Received pointcloud exceeds maximum point count! (%lu/%d)\n", pointCount, (*cloud)->maximumPointCount);
                 enet_packet_destroy(packet);
-                return;
+                continue;
             }
 
-            memcpy((*cloud)->points.data() + readCount, data, dataLen);
-            readCount += header.packet_length;
+            // drop packets for clouds we've already moved past
+            uint32_t minBuffered = UINT32_MAX;
+            bool hasBuffered = false;
+            for (int i = 0; i < 3; i++) {
+                if (buffers[i].cloudId != 0) {
+                    hasBuffered = true;
+                    minBuffered = std::min(minBuffered, buffers[i].cloudId);
+                }
+            }
+            if (hasBuffered && header.cloud_id < minBuffered) {
+                enet_packet_destroy(packet);
+                continue;
+            }
+
+            // find or allocate a receive buffer for this cloud
+            int slot = -1;
+            for (int i = 0; i < 3; i++) {
+                if (buffers[i].cloudId == header.cloud_id) {
+                    slot = i;
+                    break;
+                }
+            }
+            if (slot == -1) {
+                for (int i = 0; i < 3; i++) {
+                    if (buffers[i].cloudId == 0) {
+                        slot = i;
+                        break;
+                    }
+                }
+            }
+            if (slot == -1) {
+                // all buffers in use; drop the oldest cloud to make room
+                int oldestSlot = 0;
+                for (int i = 1; i < 3; i++) {
+                    if (buffers[i].cloudId < buffers[oldestSlot].cloudId) {
+                        oldestSlot = i;
+                    }
+                }
+                if (header.cloud_id <= buffers[oldestSlot].cloudId) {
+                    printf("No receive buffer available for cloud %u, dropping packet\n", header.cloud_id);
+                    enet_packet_destroy(packet);
+                    continue;
+                }
+                buffers[oldestSlot].cloudId = 0;
+                buffers[oldestSlot].totalLength = 0;
+                buffers[oldestSlot].received = 0;
+                buffers[oldestSlot].points.clear();
+                slot = oldestSlot;
+            }
+
+            // initialize a fresh buffer for a new cloud id
+            if (buffers[slot].cloudId == 0) {
+                buffers[slot].cloudId = header.cloud_id;
+                buffers[slot].totalLength = header.total_length;
+                buffers[slot].points.clear();
+                buffers[slot].points.reserve(header.total_length);
+                buffers[slot].received = 0;
+            }
+
+            // consistency check against already initialized buffer
+            if (buffers[slot].totalLength != header.total_length) {
+                printf("Inconsistent total_length for cloud %u, dropping packet\n", header.cloud_id);
+                enet_packet_destroy(packet);
+                continue;
+            }
+
+            if (buffers[slot].received + pointCount > buffers[slot].totalLength) {
+                printf("Received too many points for cloud %u, dropping packet\n", header.cloud_id);
+                enet_packet_destroy(packet);
+                continue;
+            }
+
+            buffers[slot].points.insert(buffers[slot].points.end(), reinterpret_cast<PointXYZRGB*>(data), reinterpret_cast<PointXYZRGB*>(data) + pointCount);
+            buffers[slot].received += pointCount;
 
             enet_packet_destroy(packet);
-            cloud->NotifyAll();
+
+            // emit completed clouds in order, skipping any dropped gaps
+            while (true) {
+                int oldestSlot = -1;
+                uint32_t oldestId = UINT32_MAX;
+                for (int i = 0; i < 3; i++) {
+                    if (buffers[i].cloudId != 0 && buffers[i].cloudId < oldestId) {
+                        oldestId = buffers[i].cloudId;
+                        oldestSlot = i;
+                    }
+                }
+                if (oldestSlot == -1) {
+                    break;
+                }
+                if (buffers[oldestSlot].received < buffers[oldestSlot].totalLength) {
+                    break;
+                }
+
+                auto& buf = buffers[oldestSlot];
+                (*cloud)->points = std::move(buf.points);
+                buf.cloudId = 0;
+                buf.totalLength = 0;
+                buf.received = 0;
+                cloud->NotifyAll();
+            }
         } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
             printf("Disconnected from server!!\n");
         } else if (event.type == ENET_EVENT_TYPE_NONE) {
