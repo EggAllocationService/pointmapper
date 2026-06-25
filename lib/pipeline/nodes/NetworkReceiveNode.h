@@ -11,6 +11,13 @@
 #include "../types/CommonTypes.h"
 
 namespace pointmapper::pipeline {
+    namespace net {
+        struct ReceiveBuffer {
+            std::vector<PointXYZRGB> points;
+            uint32_t cloudId = 0;
+            uint32_t received = 0;
+        };
+    }
     class NetworkReceiveNode : public Node {
     public:
         NetworkReceiveNode(std::string_view remoteAddress, uint16_t port);
@@ -25,6 +32,7 @@ namespace pointmapper::pipeline {
         void Process(PipelineBundle &) override;
 
         std::shared_ptr<Output<CPUPointCloud>> cloud;
+        net::ReceiveBuffer buffers[3];
     private:
         ENetHost *client;
         ENetPeer *server;
