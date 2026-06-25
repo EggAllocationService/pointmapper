@@ -120,7 +120,7 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
                 }
             }
             if (slot == -1) {
-                // all buffers in use; drop the oldest cloud to make room
+                // all buffers in use; evict the oldest cloud to make room
                 int oldestSlot = 0;
                 for (int i = 1; i < NET_RECEIVE_BUFFER_COUNT; i++) {
                     if (buffers[i].cloudId < buffers[oldestSlot].cloudId) {
@@ -132,10 +132,22 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
                     enet_packet_destroy(packet);
                     continue;
                 }
-                buffers[oldestSlot].cloudId = 0;
-                buffers[oldestSlot].totalLength = 0;
-                buffers[oldestSlot].received = 0;
-                buffers[oldestSlot].points.clear();
+
+                // present the evicted (oldest) cloud immediately
+                auto& evicted = buffers[oldestSlot];
+                (*cloud)->points = std::move(evicted.points);
+                lastPresentedCloudId = evicted.cloudId;
+                cloud->NotifyAll();
+
+                // discard all older/stale buffered clouds
+                for (int i = 0; i < NET_RECEIVE_BUFFER_COUNT; i++) {
+                    if (buffers[i].cloudId != 0 && buffers[i].cloudId <= lastPresentedCloudId) {
+                        buffers[i].cloudId = 0;
+                        buffers[i].totalLength = 0;
+                        buffers[i].received = 0;
+                        buffers[i].points.clear();
+                    }
+                }
                 slot = oldestSlot;
             }
 
