@@ -67,7 +67,7 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
             auto numPoints = std::min((points.points.size() - i), NET_MAX_PACKET_SIZE);
             auto size = sizeof(net::NetHeader) + numPoints * sizeof(PointXYZRGB);
 
-            auto packet = enet_packet_create(nullptr, size, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+            auto packet = enet_packet_create(nullptr, size, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT | ENET_PACKET_FLAG_UNSEQUENCED);
 
             auto header = net::NetHeader{
                 .magic = {'C', 'L', 'D'},

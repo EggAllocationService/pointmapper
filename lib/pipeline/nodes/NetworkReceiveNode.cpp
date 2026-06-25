@@ -115,11 +115,7 @@ void pointmapper::pipeline::NetworkReceiveNode::Process(PipelineBundle &) {
             readCount += header.packet_length;
 
             enet_packet_destroy(packet);
-            if (readCount == header.total_length) {
-                cloud->NotifyAll();
-                break;
-            }
-
+            cloud->NotifyAll();
         } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
             printf("Disconnected from server!!\n");
         } else if (event.type == ENET_EVENT_TYPE_NONE) {
