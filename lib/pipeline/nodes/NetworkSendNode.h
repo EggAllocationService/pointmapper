@@ -9,6 +9,7 @@
 #include "Node.h"
 #include "../types/CommonTypes.h"
 #include "../net.h"
+#include <zfp.h>
 
 
 namespace pointmapper::pipeline {
@@ -30,6 +31,11 @@ namespace pointmapper::pipeline {
 
     private:
         ENetHost* server;
+        void* compressionBuffer;
+        size_t compressionBufferSize;
+        zfp_field* field;
+        zfp_stream* zfp;
+        bitstream* outstream;
         uint32_t currentId;
     };
 }

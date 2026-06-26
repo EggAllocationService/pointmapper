@@ -5,6 +5,8 @@
 #ifndef POINTMAPPER_NETWORKRECIEVENODE_H
 #define POINTMAPPER_NETWORKRECIEVENODE_H
 #include <string_view>
+#include <zfp.h>
+
 #include "../enet.h"
 
 #include "Node.h"
@@ -38,6 +40,9 @@ namespace pointmapper::pipeline {
     private:
         ENetHost *client;
         ENetPeer *server;
+        zfp_field* field;
+        zfp_stream* zfp;
+        bitstream* outstream;
         uint32_t lastPresentedCloudId = 0;
     };
 }

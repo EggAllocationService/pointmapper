@@ -27,8 +27,6 @@ namespace pointmapper::pipeline::net {
         char magic[3];
         char kind;
         uint32_t cloud_id;
-        uint32_t total_length;
-        uint32_t packet_length;
     };
 
     struct NetInfoPacket {

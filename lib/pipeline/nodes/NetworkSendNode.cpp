@@ -24,9 +24,22 @@ pointmapper::pipeline::NetworkSendNode::NetworkSendNode() {
 
 pointmapper::pipeline::NetworkSendNode::~NetworkSendNode() {
     enet_host_destroy(server);
+    free(compressionBuffer);
 }
 
 void pointmapper::pipeline::NetworkSendNode::Hydrate() {
+    compressionBufferSize = (*cloud)->maximumPointCount * sizeof(PointXYZRGB);
+    compressionBuffer = malloc(compressionBufferSize * 2);
+    field = zfp_field_2d(nullptr, zfp_type_float, 0, 3);
+    zfp_field_set_stride_2d(field, 4, 1);
+
+    outstream = stream_open(compressionBuffer, compressionBufferSize);
+
+    zfp = zfp_stream_open(outstream);
+    zfp_stream_set_rate(zfp, 6, zfp_type_float, 2, false);
+    //zfp_stream_set_accuracy(zfp, 0.01); // 1cm inaccuracy
+    //zfp_stream_set_mode(zfp, zfp_mode_reversible);
+    //zfp_stream_set_reversible(zfp);
 }
 
 void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
@@ -62,28 +75,29 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
     if (cloud->HasNewData()) {
         auto& points = *(*cloud).operator->();
         //printf("Sending %lu points\n", points.points.size());
+        if (points.points.size() < 100) return;
 
-        for (uint32_t i = 0; i < points.points.size(); i += NET_MAX_PACKET_SIZE) {
-            auto numPoints = std::min((points.points.size() - i), NET_MAX_PACKET_SIZE);
-            auto size = sizeof(net::NetHeader) + numPoints * sizeof(PointXYZRGB);
+        zfp_field_set_pointer(field, points.points.data());
+        zfp_field_set_size_2d(field, points.points.size(), 3);
 
-            auto packet = enet_packet_create(nullptr, size, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT | ENET_PACKET_FLAG_UNSEQUENCED);
+        zfp_stream_rewind(zfp);
 
-            auto header = net::NetHeader{
-                .magic = {'C', 'L', 'D'},
-                .kind = 'P', // P for points
-                .cloud_id = net::to_network_order(currentId),
-                .total_length = net::to_network_order(static_cast<uint32_t>(points.points.size())),
-                .packet_length =  net::to_network_order(static_cast<uint32_t>(numPoints))
-            };
-            memcpy(packet->data, &header, sizeof(header));
+        zfp_write_header(zfp, field, ZFP_HEADER_FULL);
+        auto osize = zfp_compress(zfp, field);
 
-            // copy points
-            memcpy(packet->data + sizeof(header), points.points.data() + i, numPoints * sizeof(PointXYZRGB));
+        printf("Compressed %lu byes to %lu bytes\n", points.points.size() * 12, osize);
 
-            enet_host_broadcast(server, 0, packet);
-        }
-        currentId++;
+        auto packet = enet_packet_create(&points, osize + sizeof(net::NetHeader), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+        auto header = net::NetHeader {
+            .magic = {'C', 'L', 'D'},
+            .kind = 'C', // c == compressed points
+            .cloud_id = net::to_network_order(currentId)
+        };
+        memcpy(packet->data, &header, sizeof(header));
+        memcpy(packet->data + sizeof(net::NetHeader),  compressionBuffer, osize);
+
+        enet_host_broadcast(server, 0, packet);
         enet_host_flush(server);
+        currentId++;
     }
 }
