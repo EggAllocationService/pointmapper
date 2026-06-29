@@ -36,8 +36,8 @@ void pointmapper::pipeline::NetworkSendNode::Hydrate() {
     outstream = stream_open(compressionBuffer, compressionBufferSize);
 
     zfp = zfp_stream_open(outstream);
-    zfp_stream_set_rate(zfp, 6, zfp_type_float, 2, false);
-    //zfp_stream_set_accuracy(zfp, 0.01); // 1cm inaccuracy
+    //zfp_stream_set_rate(zfp, 6, zfp_type_float, 2, false);
+    zfp_stream_set_accuracy(zfp, 0.01); // 1cm inaccuracy
     //zfp_stream_set_mode(zfp, zfp_mode_reversible);
     //zfp_stream_set_reversible(zfp);
 }
