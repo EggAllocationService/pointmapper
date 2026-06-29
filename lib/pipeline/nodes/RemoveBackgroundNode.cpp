@@ -12,7 +12,6 @@ pointmapper::pipeline::RemoveBackgroundNode::RemoveBackgroundNode() {
     depthMap = CreateOutput<GPUDepthMap>();
     inputDepthMap = CreateInput<GPUDepthMap>();
     camera_params = CreateInput<CameraParams>();
-    frameData = CreateInput<GPUFrameData>();
 }
 
 void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
@@ -51,7 +50,7 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
         layouts[2] = layouts[1];
 
         auto kernels = PIPELINE->CompileShaderModule(embeddedKernels);
-        baseMask = PIPELINE->BuildComputePipeline("mask", kernels, "mask", std::span(layouts), sizeof(float));
+        baseMask = PIPELINE->BuildComputePipeline("mask", kernels, "mask", std::span(layouts), 0);
     }
     maskPipeline = baseMask->CreateInstance();
 
@@ -118,11 +117,8 @@ void pointmapper::pipeline::RemoveBackgroundNode::Process(PipelineBundle &bundle
     auto queue = PIPELINE->GetQueue();
     wgpuQueueWriteBuffer(queue, pipelineInfoBuffer, 0, &info, sizeof(info));
 
-    auto fd = (*frameData).operator->();
-    float scale = fd->depthUnits;
-
     int groupsX = std::max(1, p.width / 8);
     int groupsY = std::max(1, p.height / 8);
 
-    maskPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, &scale);
+    maskPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, nullptr);
 }

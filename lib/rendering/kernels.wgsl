@@ -26,7 +26,8 @@ struct MaskPushConstants {
 }
 
 struct CloudPushConstants {
-    scalar: vec4<f32>
+    scalar: vec4<f32>,
+    depth_scale: f32
 }
 
 // group 0 - uniforms
@@ -56,8 +57,6 @@ var<storage, read_write> max_depth: array<f32>;
 @binding(1)
 var<storage, read_write> prev_depth: array<f32>;
 
-var<immediate> c: MaskPushConstants;
-
 @compute @workgroup_size(8, 8)
 fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     if (pos.x > info.depth_width || pos.y > info.depth_height) {
@@ -65,7 +64,7 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     }
 
     let idx = (pos.y * info.depth_width) + pos.x;
-    var d = depth[idx] * c.scale;
+    var d = depth[idx]; ///* c.scale;
     if d < 0 {
         d = 0;
     }
@@ -113,7 +112,7 @@ fn create_cloud(@builtin(global_invocation_id) pos: vec3<u32>) {
     let idx = (pos.y * info.depth_width) + pos.x;
     let fpos = vec3f(pos);
 
-    let d = depth[idx];
+    let d = depth[idx] * cc.depth_scale;
     let x = (fpos.x - info.cx) * (d/info.fx);
     let y = (fpos.y - info.cy) * (d/info.fy);
     let z = d;

@@ -9,6 +9,11 @@
 
 #include <algorithm>
 
+struct CloudPushConstants {
+    float4 axisScale;
+    float depthScale;
+};
+
 namespace pointmapper::pipeline {
     CreatePointCloudNode::CreatePointCloudNode() {
         cloud = CreateOutput<GPUPointCloud>();
@@ -68,7 +73,7 @@ namespace pointmapper::pipeline {
             layouts[2].entries = group3Entries.data();
 
             auto kernels = PIPELINE->CompileShaderModule(embeddedKernels);
-            base = PIPELINE->BuildComputePipeline("cloud", kernels, "create_cloud", std::span(layouts), sizeof(float4));
+            base = PIPELINE->BuildComputePipeline("cloud", kernels, "create_cloud", std::span(layouts), sizeof(CloudPushConstants));
         }
         cloudPipeline = base->CreateInstance();
 
@@ -139,15 +144,16 @@ namespace pointmapper::pipeline {
         wgpuQueueWriteBuffer(queue, (*cloud)->pointCount, 0, zeros, sizeof(zeros));
 
         auto fd = (*frameData).operator->();
-        float4 axis;
-        axis.x = fd->axisScale[0];
-        axis.y = fd->axisScale[1];
-        axis.z = fd->axisScale[2];
-        axis.w = fd->axisScale[3];
+        CloudPushConstants pc;
+        pc.axisScale.x = fd->axisScale[0];
+        pc.axisScale.y = fd->axisScale[1];
+        pc.axisScale.z = fd->axisScale[2];
+        pc.axisScale.w = fd->axisScale[3];
+        pc.depthScale = fd->depthUnits;
 
         int groupsX = std::max(1, p.width / 8);
         int groupsY = std::max(1, p.height / 8);
 
-        cloudPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, &axis);
+        cloudPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, &pc);
     }
 }
