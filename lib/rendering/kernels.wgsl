@@ -64,12 +64,11 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     }
 
     let idx = (pos.y * info.depth_width) + pos.x;
-    var d = depth[idx]; ///* c.scale;
+    var d = depth[idx];
     if d < 0 {
         d = 0;
     }
     if (prev_depth[idx] == 0) {
-        depth[idx] = d;
         prev_depth[idx] = d;
     } else if (d == 0) {
         prev_depth[idx] = 0;
@@ -78,7 +77,6 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
         var filtered = (prev_depth[idx] * 0.7) + (d * 0.3);
 
         prev_depth[idx] = filtered;
-
         depth[idx] = filtered;
         d = filtered;
     }

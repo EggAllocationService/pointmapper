@@ -12,6 +12,7 @@ pointmapper::pipeline::RemoveBackgroundNode::RemoveBackgroundNode() {
     depthMap = CreateOutput<GPUDepthMap>();
     inputDepthMap = CreateInput<GPUDepthMap>();
     camera_params = CreateInput<CameraParams>();
+    frameData = CreateInput<GPUFrameData>();
 }
 
 void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
@@ -101,6 +102,8 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
 
 void pointmapper::pipeline::RemoveBackgroundNode::Process(PipelineBundle &bundle) {
     const auto& p = *(*camera_params).operator->();
+    auto fd = (*frameData).operator->();
+    float scale = fd->depthUnits;
 
     ComputePipelineInfo info = {
         .fx = p.fx,
@@ -111,7 +114,7 @@ void pointmapper::pipeline::RemoveBackgroundNode::Process(PipelineBundle &bundle
         .height = static_cast<uint32_t>(p.height),
         .colorWidth = static_cast<uint32_t>(p.colorWidth),
         .colorHeight = static_cast<uint32_t>(p.colorHeight),
-        .depth_tolerance = 0.5f
+        .depth_tolerance = 0.5f / scale
     };
 
     auto queue = PIPELINE->GetQueue();

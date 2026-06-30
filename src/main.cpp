@@ -47,7 +47,6 @@ int main() {
 
     mask->inputDepthMap->Connect(cam->depth);
     mask->camera_params->Connect(cam->params);
-    mask->frameData->Connect(cam->frameData);
 
     blobs->inputDepthMap->Connect(mask->depthMap);
     blobs->camera_params->Connect(cam->params);
