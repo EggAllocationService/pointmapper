@@ -68,27 +68,25 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
     if d < 0 {
         d = 0;
     }
-    if (prev_depth[idx] == 0) {
-        prev_depth[idx] = d;
-    } else if (d == 0) {
+
+    if (d == 0) {
         prev_depth[idx] = 0;
         depth[idx] = 0;
-    } else {
+    } else if (prev_depth[idx] != 0) {
         var filtered = (prev_depth[idx] * 0.7) + (d * 0.3);
-
-        prev_depth[idx] = filtered;
         depth[idx] = filtered;
         d = filtered;
     }
 
-   max_depth[idx] = max(max_depth[idx], d);
+    prev_depth[idx] = d;
+    let max = max(max_depth[idx], d);
 
-    let delta = abs(max_depth[idx] - d);
+    let delta = abs(max - d);
 
     if delta < info.depth_tolerance {
         depth[idx] = 0;
-        max_depth[idx] = d;
     }
+    max_depth[idx] = max;
 }
 
 
