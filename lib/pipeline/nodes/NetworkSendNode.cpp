@@ -6,8 +6,8 @@
 
 pointmapper::pipeline::NetworkSendNode::NetworkSendNode() {
     ENetAddress address = {0};
-    address.host = ENET_HOST_ANY;
     address.port = 4567;
+    enet_address_set_host_ip_new(&address, "0.0.0.0");
 
     server = enet_host_create(&address,
         32, // 32 clients

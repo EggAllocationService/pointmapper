@@ -12,7 +12,8 @@ pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view r
     std::string remote(remoteAddress);
     ENetAddress address = {0};
     address.port = port;
-    address.host = in6addr_loopback;
+
+    enet_address_set_host_ip_new(&address, remote.c_str());
 
     client = enet_host_create(
       nullptr,
@@ -27,7 +28,6 @@ pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view r
     assert(client);
 
     server = enet_host_connect(client, &address, 2, 0);
-
 
     cloud = CreateOutput<CPUPointCloud>();
 
