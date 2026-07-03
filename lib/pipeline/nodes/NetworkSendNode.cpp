@@ -85,7 +85,7 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
         zfp_write_header(zfp, field, ZFP_HEADER_FULL);
         auto osize = zfp_compress(zfp, field);
 
-        printf("Compressed %lu byes to %lu bytes\n", points.points.size() * 12, osize);
+        //printf("Compressed %lu byes to %lu bytes\n", points.points.size() * 12, osize);
 
         auto packet = enet_packet_create(&points, osize + sizeof(net::NetHeader), ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
         auto header = net::NetHeader {
