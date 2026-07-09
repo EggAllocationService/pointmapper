@@ -33,4 +33,9 @@ namespace pointmapper::pipeline::net {
         uint32_t maxPoints;
     };
 
+    struct DepthMapInfoPacket {
+        uint32_t width;
+        uint32_t height;
+    };
+
 }

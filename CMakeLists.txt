@@ -47,7 +47,9 @@ add_library(pointmapper SHARED
         lib/pipeline/nodes/NetworkReceiveNode.h
         lib/pipeline/nodes/CpuToGpuCopyNode.cpp
         lib/pipeline/nodes/CpuToGpuCopyNode.h
-        lib/pipeline/enet.cpp)
+        lib/pipeline/enet.cpp
+        lib/pipeline/nodes/DepthmapSendNode.cpp
+        lib/pipeline/nodes/DepthmapSendNode.h)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)

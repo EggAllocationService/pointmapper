@@ -12,6 +12,7 @@
 #include "../lib/kinect2/Kinect2Device.h"
 #include "../lib/pipeline/nodes/CreatePointCloudNode.h"
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
+#include "../lib/pipeline/nodes/DepthmapSendNode.h"
 #include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
 #include "../lib/pipeline/nodes/RemoveBlobsNode.h"
 #include "../lib/pipeline/nodes/GpuToCpuCopyNode.h"
@@ -40,11 +41,6 @@ int main() {
     auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
     auto blobs = pipeline->CreateNode<pointmapper::pipeline::RemoveBlobsNode>();
 
-    auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
-    cloud->camera_params->Connect(cam->params);
-    cloud->color->Connect(cam->color);
-    cloud->frameData->Connect(cam->frameData);
-
     mask->inputDepthMap->Connect(cam->depth);
     mask->camera_params->Connect(cam->params);
     mask->frameData->Connect(cam->frameData);
@@ -53,14 +49,9 @@ int main() {
     blobs->camera_params->Connect(cam->params);
     blobs->frameData->Connect(cam->frameData);
 
-    cloud->frameData->Connect(cam->frameData);
-    cloud->depth_map->Connect(blobs->depthMap);
 
-    auto cpuCopy = pipeline->CreateNode<pointmapper::pipeline::GpuToCpuCopyNode>();
-    cpuCopy->cloud->Connect(cloud->cloud);
-
-    auto output = pipeline->CreateNode<pointmapper::pipeline::NetworkSendNode>();
-    output->cloud->Connect(cpuCopy->cpuCloud);
+    auto output = pipeline->CreateNode<DepthmapSendNode>(6767);
+    output->input->Connect(blobs->depthMap);
 
     pipeline->Build();
 

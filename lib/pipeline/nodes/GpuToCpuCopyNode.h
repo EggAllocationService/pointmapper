@@ -23,12 +23,13 @@ namespace pointmapper::pipeline {
         std::shared_ptr<Input<GPUPointCloud>> cloud;
         std::shared_ptr<Output<CPUPointCloud>> cpuCloud;
 
+        static void ReadbackBuffer(WGPUBuffer buffer, size_t size);
     private:
         WGPUBuffer stagingPoints = nullptr;
         WGPUBuffer stagingPointCount = nullptr;
         size_t pointCapacityBytes = 0;
 
-        void ReadbackBuffer(WGPUBuffer buffer, size_t size);
+
     };
 }
 

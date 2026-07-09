@@ -21,17 +21,33 @@ int main() {
     addPointmapperPipelines(renderer);
 
     auto pipeline = new pointmapper::pipeline::PointmapperPipeline(renderer->GetDevice(), wgpuDeviceGetQueue(renderer->GetDevice()));
-    auto input = pipeline->CreateRoot<pointmapper::pipeline::NetworkReceiveNode>("127.0.0.1", 4567);
+    auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
-    auto copy = pipeline->CreateNode<pointmapper::pipeline::CpuToGpuCopyNode>();
-    copy->input->Connect(input->cloud);
+    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
+    auto blobs = pipeline->CreateNode<pointmapper::pipeline::RemoveBlobsNode>();
+
+    auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
+    cloud->camera_params->Connect(cam->params);
+    cloud->color->Connect(cam->color);
+    cloud->frameData->Connect(cam->frameData);
+
+    mask->inputDepthMap->Connect(cam->depth);
+    mask->camera_params->Connect(cam->params);
+    mask->frameData->Connect(cam->frameData);
+
+    blobs->inputDepthMap->Connect(mask->depthMap);
+    blobs->camera_params->Connect(cam->params);
+    blobs->frameData->Connect(cam->frameData);
+
+    cloud->frameData->Connect(cam->frameData);
+    cloud->depth_map->Connect(blobs->depthMap);
 
     pipeline->Build();
     printf("Pipeline built!");
 
     auto actor = engine->SpawnActor<TestActor>();
 
-    actor->SetNode(copy->output);
+    actor->SetNode(cloud->cloud);
 
     while (true) {
         glfwPollEvents();
