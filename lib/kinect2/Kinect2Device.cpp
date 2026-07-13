@@ -4,6 +4,7 @@
 
 #include "Kinect2Device.h"
 #include <libfreenect2/packet_pipeline.h>
+#include <libfreenect2/logger.h>
 
 #include "Kinect2Frame.h"
 
@@ -11,6 +12,7 @@ libfreenect2::Freenect2* Kinect2Device::freenect2 = nullptr;
 
 Kinect2Device::Kinect2Device() {
     if (freenect2 == nullptr) {
+        libfreenect2::setGlobalLogger(nullptr);
         freenect2 = new libfreenect2::Freenect2();
     }
 
@@ -25,6 +27,7 @@ Kinect2Device::Kinect2Device() {
 
 Kinect2Device::Kinect2Device(const std::string &serial) {
     if (freenect2 == nullptr) {
+        libfreenect2::setGlobalLogger(nullptr);
         freenect2 = new libfreenect2::Freenect2();
     }
 
@@ -64,17 +67,18 @@ std::shared_ptr<Frame> Kinect2Device::GetNextFrame() {
     return std::make_shared<Kinect2Frame>(std::move(map), listener);
 }
 
-std::unique_ptr<std::string[]> Kinect2Device::EnumerateDevices() {
+std::vector<std::string> Kinect2Device::EnumerateDevices() {
     if (freenect2 == nullptr) {
+        libfreenect2::setGlobalLogger(nullptr);
         freenect2 = new libfreenect2::Freenect2();
     }
 
     auto count = freenect2->enumerateDevices();
 
-    auto strings = std::make_unique<std::string[]>(count);
+    std::vector<std::string> strings(count);
     for (int i = 0; i < count; i++) {
         strings[i] = freenect2->getDeviceSerialNumber(i);
     }
 
-    return strings;
+    return std::move(strings);
 }

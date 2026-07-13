@@ -26,7 +26,7 @@ public:
 
     /// Retrieves the serial numbers of each connected Kinect 2
     /// @return A list of device serial numbers
-    static std::unique_ptr<std::string[]> EnumerateDevices();
+    static std::vector<std::string> EnumerateDevices();
 
 private:
     static libfreenect2::Freenect2* freenect2;
