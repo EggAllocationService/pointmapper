@@ -10,16 +10,26 @@
 
 class Kinect2Device: public DepthDevice {
 public:
+    /// Open the first kinect device found.
     Kinect2Device();
+
+    /// Open a specific device with the given serial number.
+    /// May throw an exception if the device in question does not exist.
+    Kinect2Device(const std::string& serial);
 
     CameraParams GetCameraParameters() override;
 
+    /// Get the Kinect's name, likely to be the serial number.
     std::string GetName() override;
 
     std::shared_ptr<Frame> GetNextFrame() override;
 
+    /// Retrieves the serial numbers of each connected Kinect 2
+    /// @return A list of device serial numbers
+    static std::unique_ptr<std::string[]> EnumerateDevices();
+
 private:
-    libfreenect2::Freenect2* freenect2;
+    static libfreenect2::Freenect2* freenect2;
     libfreenect2::Freenect2Device *dev;
     libfreenect2::PacketPipeline *pipeline;
     libfreenect2::SyncMultiFrameListener *listener;

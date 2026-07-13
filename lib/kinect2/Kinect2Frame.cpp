@@ -30,5 +30,5 @@ DepthType Kinect2Frame::GetDepthType() {
 }
 
 float4 Kinect2Frame::GetAxisScale() {
-    return float4(1, -1, 1, 1);
+    return {1, -1, 1, 1};
 }
