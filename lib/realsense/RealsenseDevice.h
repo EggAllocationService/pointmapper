@@ -12,11 +12,13 @@ public:
     ~RealsenseDevice() override = default;
 
     RealsenseDevice();
+    RealsenseDevice(const std::string& serial);
 
     CameraParams GetCameraParameters() override;
     std::string GetName() override;
     std::shared_ptr<Frame> GetNextFrame() override;
 
+    static std::vector<std::string> EnumerateDevices();
 private:
     rs2::pipeline pipeline;
     std::shared_ptr<RealsenseFrame> frame;

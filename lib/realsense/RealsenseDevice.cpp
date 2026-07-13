@@ -7,11 +7,17 @@
 #include "RealsenseFrame.h"
 
 
-RealsenseDevice::RealsenseDevice() {
+RealsenseDevice::RealsenseDevice() : RealsenseDevice(std::string {}) {}
+
+RealsenseDevice::RealsenseDevice(const std::string &serial) {
     pipeline = rs2::pipeline();
     rs2::config cfg;
     cfg.enable_stream(RS2_STREAM_DEPTH, -1, 640, 480, RS2_FORMAT_Z16, 30);
     cfg.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_RGBA8, 30);
+    if (!serial.empty()) {
+        cfg.enable_device(serial);
+    }
+
     pipeline.start(cfg);
     static_cast<void>(pipeline.wait_for_frames());
 
@@ -49,4 +55,16 @@ std::shared_ptr<Frame> RealsenseDevice::GetNextFrame() {
         return nullptr;
     }
 
+}
+
+std::vector<std::string> RealsenseDevice::EnumerateDevices() {
+    rs2::context ctx;
+    auto devices = ctx.query_devices();
+
+    std::vector<std::string> serials;
+    for (const auto& t : devices) {
+        auto serial = t.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER);
+        serials.emplace_back(serial);
+    }
+    return std::move(serials);
 }
