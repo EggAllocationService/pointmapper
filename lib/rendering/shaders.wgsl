@@ -53,7 +53,7 @@ fn vs(i: Vertex) -> VertexOut {
 
     var result: VertexOut;
 
-    result.pos = uniforms.projectionViewMatrix * m.m * ((i.position * 0.004) + (registration.m * vec4f(pt.pos.xyz, 1)));
+    result.pos = uniforms.projectionViewMatrix * m.m * ((i.position * 0.002) + (registration.m * vec4f(pt.pos.xyz, 1)));
     result.color = unpack4x8unorm(bitcast<u32>(pt.pos.w));
 
     return result;

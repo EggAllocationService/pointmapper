@@ -120,8 +120,8 @@ void pointmapper::pipeline::RemoveBackgroundNode::Process(PipelineBundle &bundle
     auto queue = PIPELINE->GetQueue();
     wgpuQueueWriteBuffer(queue, pipelineInfoBuffer, 0, &info, sizeof(info));
 
-    int groupsX = std::max(1, p.width / 8);
-    int groupsY = std::max(1, p.height / 8);
+    int groupsX = std::max(1, static_cast<int>(p.width) / 8);
+    int groupsY = std::max(1, static_cast<int>(p.height) / 8);
 
     maskPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, nullptr);
 }
