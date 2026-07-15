@@ -78,7 +78,7 @@ namespace pointmapper::pipeline {
 
         if (pointCount > 0) {
             ReadbackBuffer(stagingPoints, pointCapacityBytes);
-            auto* mapped = static_cast<const PointXYZRGB*>(wgpuBufferGetMappedRange(stagingPoints, 0, pointCapacityBytes));
+            auto* mapped = wgpuBufferGetMappedRange(stagingPoints, 0, pointCapacityBytes);
             if (mapped != nullptr) {
                 std::memcpy(out.points.data(), mapped, pointCount * sizeof(PointXYZRGB));
             }
