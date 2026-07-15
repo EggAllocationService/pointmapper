@@ -28,6 +28,10 @@ public:
     /// @return A list of device serial numbers
     static std::vector<std::string> EnumerateDevices();
 
+    [[nodiscard]] libfreenect2::Freenect2Device *GetHandle() const {
+        return dev;
+    }
+
 private:
     static libfreenect2::Freenect2* freenect2;
     libfreenect2::Freenect2Device *dev;
