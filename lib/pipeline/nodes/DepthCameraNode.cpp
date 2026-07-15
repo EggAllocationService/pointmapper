@@ -12,7 +12,7 @@ pointmapper::pipeline::DepthCameraNode::DepthCameraNode(DepthDevice* d) {
     depth = CreateOutput<GPUDepthMap>();
     params = CreateOutput<CameraParams>();
     color = CreateOutput<GPUColorTexture>();
-    frameData = CreateOutput<GPUFrameData>();
+    frameData = CreateOutput<FrameData>();
     device = d;
 }
 

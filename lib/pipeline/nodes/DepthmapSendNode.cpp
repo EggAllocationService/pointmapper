@@ -17,7 +17,7 @@ DepthmapSendNode::DepthmapSendNode(int port) {
 
     server = enet_host_create(&address,
         32, // 32 clients
-        2, // 2 channels per client. Channel 0 is point data and channel 1 is control signals
+        3, // 2 channels per client. Channel 0 is point data and channel 1 is control signals
         0, // no incoming bandwidth limit
         0 // no outgoing bandwidth limit
     );
@@ -51,7 +51,7 @@ void DepthmapSendNode::Process(pointmapper::pipeline::PipelineBundle &bundle) {
     ENetPacket *packet = nullptr;
     switch (event.type) {
         case ENET_EVENT_TYPE_CONNECT:
-            printf("Client connected from :%u\n", event.peer->address.port);
+            printf("[Depth] Client connected from :%u\n", event.peer->address.port);
 
             packet = enet_packet_create(&info, sizeof(info), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(event.peer, 1, packet);
@@ -85,6 +85,22 @@ void DepthmapSendNode::Process(pointmapper::pipeline::PipelineBundle &bundle) {
         auto osize = zfp_compress(zfp, field);
         printf("Compressed %lu byes to %lu bytes\n", dataSize, osize);
 
+        auto packetSize = sizeof(pointmapper::pipeline::net::NetHeader) + sizeof(pointmapper::pipeline::FrameData) + osize;
+
+        auto packet = enet_packet_create(nullptr, packetSize, ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT);
+        *reinterpret_cast<pointmapper::pipeline::net::NetHeader*>(packet->data) = {
+            .magic = {'C', 'L', 'D'},
+            .kind = 'D', // 'D' = depth map
+            .cloud_id = currentId
+        };
+
+        *reinterpret_cast<pointmapper::pipeline::FrameData*>(packet->data + sizeof(pointmapper::pipeline::net::NetHeader)) = **frameData;
+
+        memcpy(packet->data + sizeof(pointmapper::pipeline::net::NetHeader) + sizeof(pointmapper::pipeline::FrameData), compressionBuffer, osize);
+
+        enet_host_broadcast(server, 0, packet);
+
         wgpuBufferUnmap(readBuffer);
+        currentId++;
     }
 }

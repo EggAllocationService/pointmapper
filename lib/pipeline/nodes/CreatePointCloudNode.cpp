@@ -21,7 +21,7 @@ namespace pointmapper::pipeline {
         depth_map = CreateInput<GPUDepthMap>();
         camera_params = CreateInput<CameraParams>();
         color = CreateInput<GPUColorTexture>();
-        frameData = CreateInput<GPUFrameData>();
+        frameData = CreateInput<FrameData>();
     }
 
     void CreatePointCloudNode::Hydrate() {

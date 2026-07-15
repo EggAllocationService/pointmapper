@@ -22,7 +22,7 @@ public:
 
     std::shared_ptr<pointmapper::pipeline::Input<pointmapper::pipeline::GPUDepthMap>> depth;
     std::shared_ptr<pointmapper::pipeline::Input<CameraParams>> cameraParams;
-    std::shared_ptr<pointmapper::pipeline::Input<pointmapper::pipeline::GPUFrameData>> frameData;
+    std::shared_ptr<pointmapper::pipeline::Input<pointmapper::pipeline::FrameData>> frameData;
 private:
     WGPUBuffer readBuffer;
     ENetHost* server;

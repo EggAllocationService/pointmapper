@@ -24,7 +24,7 @@ namespace pointmapper::pipeline {
         std::shared_ptr<Input<GPUDepthMap>> depth_map;
         std::shared_ptr<Input<CameraParams>> camera_params;
         std::shared_ptr<Input<GPUColorTexture>> color;
-        std::shared_ptr<Input<GPUFrameData>> frameData;
+        std::shared_ptr<Input<FrameData>> frameData;
 
     private:
         WGPUBuffer pipelineInfoBuffer = nullptr;

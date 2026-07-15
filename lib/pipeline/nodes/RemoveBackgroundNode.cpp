@@ -12,7 +12,7 @@ pointmapper::pipeline::RemoveBackgroundNode::RemoveBackgroundNode() {
     depthMap = CreateOutput<GPUDepthMap>();
     inputDepthMap = CreateInput<GPUDepthMap>();
     camera_params = CreateInput<CameraParams>();
-    frameData = CreateInput<GPUFrameData>();
+    frameData = CreateInput<FrameData>();
 }
 
 void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {

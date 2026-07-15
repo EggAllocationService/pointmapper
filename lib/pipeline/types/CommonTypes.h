@@ -37,7 +37,7 @@ namespace pointmapper::pipeline {
         std::shared_ptr<GPUTexture> texture;
     };
 
-    struct GPUFrameData {
+    struct FrameData {
         float depthUnits;
         float axisScale[4];
     };
