@@ -9,7 +9,7 @@
 #include "../net.h"
 
 DepthmapSendNode::DepthmapSendNode(int port) {
-    input = CreateInput<pointmapper::pipeline::GPUDepthMap>();
+    depth = CreateInput<pointmapper::pipeline::GPUDepthMap>();
     ENetAddress address = {0};
     address.port = port;
 
@@ -27,12 +27,12 @@ DepthmapSendNode::DepthmapSendNode(int port) {
 }
 
 void DepthmapSendNode::Hydrate() {
-    const auto& depth = *(*input).operator->();
-    dataSize = depth.width * depth.height * sizeof(float);
+    const auto& d = *(*depth).operator->();
+    dataSize = d.width * d.height * sizeof(float);
     compressionBuffer = malloc(dataSize);
     readBuffer = pointmapper::pipeline::PIPELINE->CreateBuffer(dataSize, WGPUBufferUsage_CopyDst | WGPUBufferUsage_MapRead);
 
-    field = zfp_field_2d(nullptr, zfp_type_float, depth.width, depth.height);
+    field = zfp_field_2d(nullptr, zfp_type_float, d.width, d.height);
     outstream = stream_open(compressionBuffer, dataSize);
 
     zfp = zfp_stream_open(outstream);
@@ -44,8 +44,9 @@ void DepthmapSendNode::Process(pointmapper::pipeline::PipelineBundle &bundle) {
     enet_host_service(server, &event, 1);
 
     auto info = pointmapper::pipeline::net::DepthMapInfoPacket {
-        .width = pointmapper::pipeline::net::to_network_order((*input)->width),
-        .height = pointmapper::pipeline::net::to_network_order((*input)->height)
+        .width = pointmapper::pipeline::net::to_network_order((*depth)->width),
+        .height = pointmapper::pipeline::net::to_network_order((*depth)->height),
+        .cameraParams = pointmapper::pipeline::net::to_network_order(**cameraParams)
     };
     ENetPacket *packet = nullptr;
     switch (event.type) {
@@ -69,9 +70,9 @@ void DepthmapSendNode::Process(pointmapper::pipeline::PipelineBundle &bundle) {
             break;
     }
 
-    if (input->HasNewData()) {
+    if (depth->HasNewData()) {
         bundle.EndComputePass();
-        wgpuCommandEncoderCopyBufferToBuffer(bundle.cmd, (*input)->buffer, 0, readBuffer, 0, dataSize);
+        wgpuCommandEncoderCopyBufferToBuffer(bundle.cmd, (*depth)->buffer, 0, readBuffer, 0, dataSize);
 
         bundle.Flush();
 

@@ -11,6 +11,7 @@
 #include "../enet.h"
 
 
+
 class DepthmapSendNode : public pointmapper::pipeline::Node {
 public:
     DepthmapSendNode(int port);
@@ -19,7 +20,9 @@ public:
 
     void Process(pointmapper::pipeline::PipelineBundle &) override;
 
-    std::shared_ptr<pointmapper::pipeline::Input<pointmapper::pipeline::GPUDepthMap>> input;
+    std::shared_ptr<pointmapper::pipeline::Input<pointmapper::pipeline::GPUDepthMap>> depth;
+    std::shared_ptr<pointmapper::pipeline::Input<CameraParams>> cameraParams;
+    std::shared_ptr<pointmapper::pipeline::Input<pointmapper::pipeline::GPUFrameData>> frameData;
 private:
     WGPUBuffer readBuffer;
     ENetHost* server;

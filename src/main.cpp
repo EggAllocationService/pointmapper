@@ -51,7 +51,7 @@ int main() {
 
 
     auto output = pipeline->CreateNode<DepthmapSendNode>(6767);
-    output->input->Connect(blobs->depthMap);
+    output->depth->Connect(blobs->depthMap);
 
     pipeline->Build();
 

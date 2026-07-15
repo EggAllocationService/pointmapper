@@ -158,6 +158,10 @@ namespace pointmapper::pipeline {
             return &source->value;
         }
 
+        T& operator*() {
+            return source->value;
+        }
+
         void Connect(std::shared_ptr<Output<T>> src) {
             source = src;
             src->AddConsumer(this);

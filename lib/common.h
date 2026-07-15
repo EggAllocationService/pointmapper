@@ -22,15 +22,15 @@ struct PointXYZRGB {
     };
 };
 enum ColorType {
-    RGBX,
-    BGRX,
+    RGBX = 1,
+    BGRX = 2,
 };
 
 
 struct CameraParams {
     float fx, fy, cx, cy;
-    int width, height;
-    int colorWidth, colorHeight;
+    uint32_t width, height;
+    uint32_t colorWidth, colorHeight;
     ColorType colorType;
 };
 
