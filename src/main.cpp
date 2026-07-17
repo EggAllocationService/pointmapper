@@ -52,6 +52,8 @@ int main() {
 
     auto output = pipeline->CreateNode<DepthmapSendNode>(6767);
     output->depth->Connect(blobs->depthMap);
+    output->cameraParams->Connect(cam->params);
+    output->frameData->Connect(cam->frameData);
 
     pipeline->Build();
 

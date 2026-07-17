@@ -20,7 +20,7 @@ namespace pointmapper::pipeline {
 
         depth_map = CreateInput<GPUDepthMap>();
         camera_params = CreateInput<CameraParams>();
-        color = CreateInput<GPUColorTexture>();
+        color = CreateInput<GPUColorTexture>(true);
         frameData = CreateInput<FrameData>();
     }
 
@@ -108,8 +108,13 @@ namespace pointmapper::pipeline {
         samplerEntry.sampler = sampler;
 
         WGPUBindGroupEntry colorEntry = WGPU_BIND_GROUP_ENTRY_INIT;
-        colorEntry.textureView = *(*color)->texture;
         colorEntry.binding = 1;
+        if (color->IsConnected()) {
+            colorEntry.textureView = *(*color)->texture;
+        } else {
+            auto tex = PIPELINE->CreateTexture("dummy texture", WGPUTextureUsage_TextureBinding, WGPUTextureFormat_RGBA8Unorm, 1, 1);
+            colorEntry.textureView = wgpuTextureCreateView(*tex, nullptr);
+        }
 
         cloudPipeline->SetBinding(0, infoEntry);
         cloudPipeline->SetBinding(0, countEntry);

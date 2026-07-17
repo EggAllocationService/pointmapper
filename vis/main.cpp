@@ -9,6 +9,7 @@
 #include "../lib/pipeline/PointmapperPipeline.h"
 #include "../lib/pipeline/nodes/CpuToGpuCopyNode.h"
 #include "../lib/pipeline/nodes/DepthCameraNode.h"
+#include "../lib/pipeline/nodes/DepthmapReceiveNode.h"
 #include "../lib/pipeline/nodes/NetworkReceiveNode.h"
 #include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
 #include "../lib/pipeline/nodes/RemoveBlobsNode.h"
@@ -21,26 +22,12 @@ int main() {
     addPointmapperPipelines(renderer);
 
     auto pipeline = new pointmapper::pipeline::PointmapperPipeline(renderer->GetDevice(), wgpuDeviceGetQueue(renderer->GetDevice()));
-    auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
-
-    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
-    auto blobs = pipeline->CreateNode<pointmapper::pipeline::RemoveBlobsNode>();
-
     auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
-    cloud->camera_params->Connect(cam->params);
-    cloud->color->Connect(cam->color);
-    cloud->frameData->Connect(cam->frameData);
 
-    mask->inputDepthMap->Connect(cam->depth);
-    mask->camera_params->Connect(cam->params);
-    mask->frameData->Connect(cam->frameData);
-
-    blobs->inputDepthMap->Connect(mask->depthMap);
-    blobs->camera_params->Connect(cam->params);
-    blobs->frameData->Connect(cam->frameData);
-
-    cloud->frameData->Connect(cam->frameData);
-    cloud->depth_map->Connect(blobs->depthMap);
+    auto input = pipeline->CreateRoot<DepthmapReceiveNode>("127.0.0.1", 6767);
+    cloud->camera_params->Connect(input->cameraParams);
+    cloud->depth_map->Connect(input->depth);
+    cloud->frameData->Connect(input->frameData);
 
     pipeline->Build();
     printf("Pipeline built!");
