@@ -10,6 +10,9 @@
 
 DepthmapSendNode::DepthmapSendNode(int port) {
     depth = CreateInput<pointmapper::pipeline::GPUDepthMap>();
+    cameraParams = CreateInput<CameraParams>();
+    frameData = CreateInput<pointmapper::pipeline::FrameData>();
+
     ENetAddress address = {0};
     address.port = port;
 
@@ -83,7 +86,6 @@ void DepthmapSendNode::Process(pointmapper::pipeline::PipelineBundle &bundle) {
         zfp_stream_rewind(zfp);
         zfp_write_header(zfp, field, ZFP_HEADER_FULL);
         auto osize = zfp_compress(zfp, field);
-        printf("Compressed %lu byes to %lu bytes\n", dataSize, osize);
 
         auto packetSize = sizeof(pointmapper::pipeline::net::NetHeader) + sizeof(pointmapper::pipeline::FrameData) + osize;
 
