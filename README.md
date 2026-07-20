@@ -87,6 +87,7 @@ GLEngine provides rendering of Wavefront .obj models with custom materials and a
 This lets Pointmapper re-use the `wgpu` context created by GLEngine
 ```c++
 auto engine = new glengine::Engine("Visualizer", int2(1280, 720)); // second parameter is the initial window width/height
+engine->SetAllowNonFocusedPawnInput(true); // Lets us pilot the free-flying camera without locking the mouse to the window
 auto pipeline = new pointmapper::pipeline::PointmapperPipeline(renderer->GetDevice(), wgpuDeviceGetQueue(renderer->GetDevice()));
 ```
 We'll also establish a simple pipeline that converts the color/depth captured by a Kinect 2 camera to a point cloud without any further processing:
@@ -136,6 +137,8 @@ while (true) {
     engine->Render();
 }
 ```
+
+The engine will provide a default free-flying camera to let you observe the point cloud from any angle. 
 
 
 
