@@ -109,7 +109,7 @@ Pointmapper includes the shaders needed to render point clouds efficiently. You 
 addPointmapperPipelines(engine->GetRenderer());
 ```
 
-Now that the pipeline is built and the rendering environment is set up, we can create and Actor to draw our point cloud. 
+Now that the pipeline is built and the rendering environment is set up, we can create an Actor to draw our point cloud. 
 In GLEngine, the world is made up of Actors, which themselves are made up of Components. Only Components can submit rendering commands; Actors only manage the components they own.
 
 Pointmapper provides `PointCloudComponent`, which connects to a point cloud output from a pipeline node and renders it at the component's origin. We'll define a `PointActor` that contains one `PointCloudComponent`:
@@ -138,7 +138,7 @@ while (true) {
 }
 ```
 
-The engine will provide a default free-flying camera to let you observe the point cloud from any angle. 
+The engine will provide a default free-flying camera to let you observe the point cloud from any angle. You can view the complete source code for this example in `examples/simpleviz.cpp`
 
 
 
