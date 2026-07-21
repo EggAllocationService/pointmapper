@@ -2,10 +2,10 @@
 // Created by Kyle Smith on 2026-06-11.
 //
 
-#include "CreatePointCloudNode.h"
-#include "../EmbeddedKernels.h"
-#include "../PointmapperPipeline.h"
-#include "../../common.h"
+#include "pointmapper/pipeline/nodes/CreatePointCloudNode.h"
+#include "pointmapper/pipeline/EmbeddedKernels.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
+#include "pointmapper/common.h"
 
 #include <algorithm>
 

@@ -2,8 +2,7 @@
 // Created by Kyle Smith on 2026-05-22.
 //
 
-#include "PointmapperPipeline.h"
-#include "../common.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
 
 #include <cassert>
 #include <iostream>

@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-18.
 //
 
-#include "NetworkSendNode.h"
+#include "pointmapper/pipeline/nodes/NetworkSendNode.h"
 
 pointmapper::pipeline::NetworkSendNode::NetworkSendNode() {
     ENetAddress address = {0};

@@ -2,11 +2,11 @@
 // Created by Kyle Smith on 2026-06-19.
 //
 
-#include "NetworkReceiveNode.h"
+#include "pointmapper/pipeline/nodes/NetworkReceiveNode.h"
 
 #include <cassert>
 
-#include "../net.h"
+#include "pointmapper/pipeline/net.h"
 
 pointmapper::pipeline::NetworkReceiveNode::NetworkReceiveNode(std::string_view remoteAddress, uint16_t port) {
     std::string remote(remoteAddress);

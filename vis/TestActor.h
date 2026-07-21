@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-02.
 //
 #pragma once
-#include "../lib/rendering/PointCloudComponent.h"
+#include "pointmapper/rendering/PointCloudComponent.h"
 #include "3d/Actor.h"
 #include "3d/text/SlugTextComponent.h"
 

@@ -3,21 +3,17 @@
 //
 
 #include <iostream>
-#include <exception>
 #include <execinfo.h>
 
 #include "Engine.h"
 #include "../vis/TestActor.h"
-#include "../lib/pipeline/PointmapperPipeline.h"
-#include "../lib/kinect2/Kinect2Device.h"
-#include "../lib/pipeline/nodes/CreatePointCloudNode.h"
-#include "../lib/pipeline/nodes/DepthCameraNode.h"
-#include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
-#include "../lib/pipeline/nodes/RemoveBlobsNode.h"
-#include "../lib/pipeline/nodes/GpuToCpuCopyNode.h"
-#include "../lib/rendering/pipelines.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
+#include "pointmapper/kinect2/Kinect2Device.h"
+#include "pointmapper/pipeline/nodes/CreatePointCloudNode.h"
+#include "pointmapper/pipeline/nodes/DepthCameraNode.h"
+#include "pointmapper/pipeline/nodes/GpuToCpuCopyNode.h"
 
-#include "../lib/pipeline/nodes/NetworkSendNode.h"
+#include "pointmapper/pipeline/nodes/NetworkSendNode.h"
 
 void my_terminate_handler() {
     void* array[10];
@@ -37,24 +33,11 @@ int main() {
 
     auto cam = pipeline->CreateRoot<pointmapper::pipeline::DepthCameraNode>(new Kinect2Device());
 
-    auto mask = pipeline->CreateNode<pointmapper::pipeline::RemoveBackgroundNode>();
-    auto blobs = pipeline->CreateNode<pointmapper::pipeline::RemoveBlobsNode>();
-
     auto cloud = pipeline->CreateNode<pointmapper::pipeline::CreatePointCloudNode>();
     cloud->camera_params->Connect(cam->params);
     cloud->color->Connect(cam->color);
     cloud->frameData->Connect(cam->frameData);
-
-    mask->inputDepthMap->Connect(cam->depth);
-    mask->camera_params->Connect(cam->params);
-    mask->frameData->Connect(cam->frameData);
-
-    blobs->inputDepthMap->Connect(mask->depthMap);
-    blobs->camera_params->Connect(cam->params);
-    blobs->frameData->Connect(cam->frameData);
-
-    cloud->frameData->Connect(cam->frameData);
-    cloud->depth_map->Connect(blobs->depthMap);
+    cloud->depth_map->Connect(cam->depth);
 
     auto cpuCopy = pipeline->CreateNode<pointmapper::pipeline::GpuToCpuCopyNode>();
     cpuCopy->cloud->Connect(cloud->cloud);

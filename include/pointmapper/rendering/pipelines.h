@@ -3,6 +3,6 @@
 //
 
 #pragma once
-#include "pipeline/wgpu/WGPURenderer.h"
+#include "Engine.h"
 
 void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer);

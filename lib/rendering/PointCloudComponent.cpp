@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-02.
 //
 
-#include "PointCloudComponent.h"
+#include "pointmapper/rendering/PointCloudComponent.h"
 
 #include "Engine.h"
 #include "3d/mesh/StaticMesh.h"

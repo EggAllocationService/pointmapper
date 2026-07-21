@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-05-25.
 //
 
-#include "Kinect2Frame.h"
+#include "pointmapper/kinect2/Kinect2Frame.h"
 
 Kinect2Frame::Kinect2Frame(libfreenect2::FrameMap &&map, libfreenect2::SyncMultiFrameListener* listener) {
     this->map = std::move(map);

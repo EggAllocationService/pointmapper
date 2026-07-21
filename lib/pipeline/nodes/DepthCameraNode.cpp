@@ -2,9 +2,9 @@
 // Created by Kyle Smith on 2026-06-11.
 //
 
-#include "DepthCameraNode.h"
-#include "../PointmapperPipeline.h"
-#include "../../common.h"
+#include "pointmapper/pipeline/nodes/DepthCameraNode.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
+#include "pointmapper/common.h"
 
 #include <algorithm>
 

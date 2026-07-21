@@ -2,8 +2,8 @@
 // Created by Kyle Smith on 2026-06-16.
 //
 
-#include "GpuToCpuCopyNode.h"
-#include "../PointmapperPipeline.h"
+#include "pointmapper/pipeline/nodes/GpuToCpuCopyNode.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
 
 #include <cstring>
 #include <future>

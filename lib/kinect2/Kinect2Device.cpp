@@ -2,11 +2,11 @@
 // Created by Kyle Smith on 2026-05-25.
 //
 
-#include "Kinect2Device.h"
+#include "pointmapper/kinect2/Kinect2Device.h"
 #include <libfreenect2/packet_pipeline.h>
 #include <libfreenect2/logger.h>
 
-#include "Kinect2Frame.h"
+#include "pointmapper/kinect2/Kinect2Frame.h"
 
 libfreenect2::Freenect2* Kinect2Device::freenect2 = nullptr;
 

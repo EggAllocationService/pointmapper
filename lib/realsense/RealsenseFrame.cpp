@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-05-21.
 //
 
-#include "RealsenseFrame.h"
+#include "pointmapper/realsense/RealsenseFrame.h"
 
 const float * RealsenseFrame::GetDepth() {
     return converted_depth.data();

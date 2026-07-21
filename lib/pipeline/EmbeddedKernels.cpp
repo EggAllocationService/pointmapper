@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-15.
 //
 
-#include "EmbeddedKernels.h"
+#include "pointmapper/pipeline/EmbeddedKernels.h"
 
 namespace pointmapper::pipeline {
     const char embeddedKernels[] = {

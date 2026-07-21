@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-15.
 //
 
-#include "GPUTexture.h"
+#include "pointmapper/pipeline/GPUTexture.h"
 
 namespace pointmapper::pipeline {
 

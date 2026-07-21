@@ -2,9 +2,9 @@
 // Created by Kyle Smith on 2026-06-02.
 //
 
-#include "pipelines.h"
+#include "pointmapper/rendering/pipelines.h"
 #include "PointResources.h"
-#include "PointCloudComponent.h"
+#include "pointmapper/rendering/PointCloudComponent.h"
 
 
 void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {

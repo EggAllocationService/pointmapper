@@ -12,42 +12,44 @@ option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
 option(VISUALIZATION "Build visualization utilities" ON)
 
 add_library(pointmapper STATIC
-        lib/DepthDevice.h
+        include/pointmapper/DepthDevice.h
         lib/background/BackgroundProcessor.cpp
-        lib/background/BackgroundProcessor.h
-        lib/common.h
+        include/pointmapper/background/BackgroundProcessor.h
+        include/pointmapper/common.h
         lib/common.cpp
         lib/pipeline/PointmapperPipeline.cpp
-        lib/pipeline/PointmapperPipeline.h
+        include/pointmapper/pipeline/PointmapperPipeline.h
         lib/pipeline/ComputePipeline.cpp
-        lib/pipeline/ComputePipeline.h
+        include/pointmapper/pipeline/ComputePipeline.h
         lib/pipeline/GPUTexture.cpp
-        lib/pipeline/GPUTexture.h
+        include/pointmapper/pipeline/GPUTexture.h
         lib/pipeline/EmbeddedKernels.cpp
-        lib/pipeline/EmbeddedKernels.h
+        include/pointmapper/pipeline/EmbeddedKernels.h
         lib/registration/registration.cpp
-        lib/registration/registration.h
-        lib/pipeline/nodes/Node.h
-        lib/pipeline/types/CommonTypes.h
+        include/pointmapper/registration/registration.h
+        include/pointmapper/pipeline/nodes/Node.h
+        include/pointmapper/pipeline/types/CommonTypes.h
         lib/pipeline/nodes/DepthCameraNode.cpp
-        lib/pipeline/nodes/DepthCameraNode.h
+        include/pointmapper/pipeline/nodes/DepthCameraNode.h
         lib/pipeline/nodes/Node.cpp
         lib/pipeline/nodes/CreatePointCloudNode.cpp
-        lib/pipeline/nodes/CreatePointCloudNode.h
-        lib/pipeline/nodes/RemoveBackgroundNode.h
+        include/pointmapper/pipeline/nodes/CreatePointCloudNode.h
+        include/pointmapper/pipeline/nodes/RemoveBackgroundNode.h
         lib/pipeline/nodes/RemoveBackgroundNode.cpp
-        lib/pipeline/nodes/RemoveBlobsNode.h
+        include/pointmapper/pipeline/nodes/RemoveBlobsNode.h
         lib/pipeline/nodes/RemoveBlobsNode.cpp
-        lib/pipeline/nodes/GpuToCpuCopyNode.h
+        include/pointmapper/pipeline/nodes/GpuToCpuCopyNode.h
         lib/pipeline/nodes/GpuToCpuCopyNode.cpp
         lib/pipeline/nodes/NetworkSendNode.cpp
-        lib/pipeline/nodes/NetworkSendNode.h
+        include/pointmapper/pipeline/nodes/NetworkSendNode.h
         lib/pipeline/net.cpp
         lib/pipeline/nodes/NetworkReceiveNode.cpp
-        lib/pipeline/nodes/NetworkReceiveNode.h
+        include/pointmapper/pipeline/nodes/NetworkReceiveNode.h
         lib/pipeline/nodes/CpuToGpuCopyNode.cpp
-        lib/pipeline/nodes/CpuToGpuCopyNode.h
+        include/pointmapper/pipeline/nodes/CpuToGpuCopyNode.h
         lib/pipeline/enet.cpp)
+
+target_include_directories(pointmapper PUBLIC include)
 
 if (REALSENSE_SUPPORT)
     find_package(realsense2 REQUIRED)
@@ -56,9 +58,9 @@ if (REALSENSE_SUPPORT)
     target_sources(pointmapper
             PRIVATE
             lib/realsense/RealsenseFrame.cpp
-            lib/realsense/RealsenseFrame.h
+            include/pointmapper/realsense/RealsenseFrame.h
             lib/realsense/RealsenseDevice.cpp
-            lib/realsense/RealsenseDevice.h)
+            include/pointmapper/realsense/RealsenseDevice.h)
 endif()
 
 if (KINECT2_SUPPORT)
@@ -70,9 +72,9 @@ if (KINECT2_SUPPORT)
     target_sources(pointmapper
             PRIVATE
             lib/kinect2/Kinect2Device.cpp
-            lib/kinect2/Kinect2Device.h
+            include/pointmapper/kinect2/Kinect2Device.h
             lib/kinect2/Kinect2Frame.cpp
-            lib/kinect2/Kinect2Frame.h)
+            include/pointmapper/kinect2/Kinect2Frame.h)
 endif()
 
 if (OAK_SUPPORT)
@@ -96,9 +98,9 @@ if (VISUALIZATION)
 
     target_sources(pointmapper PRIVATE
             lib/rendering/PointCloudComponent.cpp
-            lib/rendering/PointCloudComponent.h
+            include/pointmapper/rendering/PointCloudComponent.h
             lib/rendering/pipelines.cpp
-            lib/rendering/pipelines.h
+            include/pointmapper/rendering/pipelines.h
     )
     target_link_libraries(pointmapper PUBLIC glengine PointResources)
     target_include_directories(pointmapper PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

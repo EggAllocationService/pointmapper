@@ -2,9 +2,8 @@
 // Created by Kyle Smith on 2026-05-21.
 //
 
-#include "RealsenseDevice.h"
-
-#include "RealsenseFrame.h"
+#include "pointmapper/realsense/RealsenseDevice.h"
+#include "pointmapper/realsense/RealsenseFrame.h"
 
 
 RealsenseDevice::RealsenseDevice() : RealsenseDevice(std::string {}) {}

@@ -2,9 +2,9 @@
 // Created by Kyle Smith on 2026-06-11.
 //
 
-#include "RemoveBackgroundNode.h"
-#include "../EmbeddedKernels.h"
-#include "../PointmapperPipeline.h"
+#include "pointmapper/pipeline/nodes/RemoveBackgroundNode.h"
+#include "pointmapper/pipeline/EmbeddedKernels.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
 
 #include <algorithm>
 

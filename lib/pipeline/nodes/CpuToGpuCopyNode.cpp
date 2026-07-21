@@ -2,9 +2,9 @@
 // Created by Kyle Smith on 2026-06-19.
 //
 
-#include "CpuToGpuCopyNode.h"
+#include "pointmapper/pipeline/nodes/CpuToGpuCopyNode.h"
 
-#include "../PointmapperPipeline.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
 
 pointmapper::pipeline::CpuToGpuCopyNode::CpuToGpuCopyNode() {
     input = CreateInput<CPUPointCloud>();

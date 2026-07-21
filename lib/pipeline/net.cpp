@@ -1,7 +1,7 @@
 //
 // Created by Kyle Smith on 2026-06-19.
 //
-#include "net.h"
+#include "pointmapper/pipeline/net.h"
 
 template<>
 uint32_t pointmapper::pipeline::net::reverse<uint32_t>(uint32_t val) {

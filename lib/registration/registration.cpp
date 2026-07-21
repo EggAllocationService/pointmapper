@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-08.
 //
 
-#include "registration.h"
+#include "pointmapper/registration/registration.h"
 
 #include <pcl-1.15/pcl/point_cloud.h>
 #include <pcl/visualization/pcl_visualizer.h>

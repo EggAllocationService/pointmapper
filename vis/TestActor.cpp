@@ -6,8 +6,7 @@
 
 #include "Engine.h"
 #include "3d/text/SlugTextComponent.h"
-#include "../lib/kinect2/Kinect2Device.h"
-#include "../lib/rendering/PointCloudComponent.h"
+#include "pointmapper/rendering/PointCloudComponent.h"
 #include "3d/mesh/StaticMeshComponent.h"
 
 TestActor::TestActor() {

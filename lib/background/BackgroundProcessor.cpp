@@ -9,8 +9,8 @@ const char kernels[] = {
 #embed "kernels.wgsl"
 };
 
-#include "BackgroundProcessor.h"
-#include "../common.h"
+#include "pointmapper/background/BackgroundProcessor.h"
+#include "pointmapper/common.h"
 #include <assert.h>
 
 struct MaskPushConstants {

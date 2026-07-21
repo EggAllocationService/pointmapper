@@ -2,9 +2,9 @@
 // Created by Kyle Smith on 2026-06-16.
 //
 
-#include "RemoveBlobsNode.h"
-#include "../EmbeddedKernels.h"
-#include "../PointmapperPipeline.h"
+#include "pointmapper/pipeline/nodes/RemoveBlobsNode.h"
+#include "pointmapper/pipeline/EmbeddedKernels.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
 
 #include <algorithm>
 

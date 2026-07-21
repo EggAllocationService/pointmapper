@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-06-15.
 //
 
-#include "ComputePipeline.h"
+#include "pointmapper/pipeline/ComputePipeline.h"
 
 namespace pointmapper::pipeline {
 

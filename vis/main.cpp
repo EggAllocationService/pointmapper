@@ -5,14 +5,14 @@
 
 #include "Engine.h"
 #include "TestActor.h"
-#include "../lib/kinect2/Kinect2Device.h"
-#include "../lib/pipeline/PointmapperPipeline.h"
-#include "../lib/pipeline/nodes/CpuToGpuCopyNode.h"
-#include "../lib/pipeline/nodes/DepthCameraNode.h"
-#include "../lib/pipeline/nodes/NetworkReceiveNode.h"
-#include "../lib/pipeline/nodes/RemoveBackgroundNode.h"
-#include "../lib/pipeline/nodes/RemoveBlobsNode.h"
-#include "../lib/rendering/pipelines.h"
+#include "pointmapper/kinect2/Kinect2Device.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
+#include "pointmapper/pipeline/nodes/CpuToGpuCopyNode.h"
+#include "pointmapper/pipeline/nodes/DepthCameraNode.h"
+#include "pointmapper/pipeline/nodes/NetworkReceiveNode.h"
+#include "pointmapper/pipeline/nodes/RemoveBackgroundNode.h"
+#include "pointmapper/pipeline/nodes/RemoveBlobsNode.h"
+#include "pointmapper/rendering/pipelines.h"
 
 int main() {
     auto engine = new glengine::Engine("Point Visualizer", int2(1280, 720));

@@ -1,7 +1,7 @@
 //
 // Created by Kyle Smith on 2026-06-11.
 //
-#include "Node.h"
+#include "pointmapper/pipeline/nodes/Node.h"
 
 pointmapper::pipeline::PointmapperPipeline* pointmapper::pipeline::PIPELINE = nullptr;
 
