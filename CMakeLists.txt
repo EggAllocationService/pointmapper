@@ -11,7 +11,7 @@ option(KINECT2_SUPPORT "Support for Xbox Kinect v2 cameras" ON)
 option(OAK_SUPPORT "Support for OAK cameras via depthai" OFF)
 option(VISUALIZATION "Build visualization utilities" ON)
 
-add_library(pointmapper SHARED
+add_library(pointmapper STATIC
         lib/DepthDevice.h
         lib/background/BackgroundProcessor.cpp
         lib/background/BackgroundProcessor.h
