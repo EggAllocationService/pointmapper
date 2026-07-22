@@ -116,8 +116,9 @@ Pointmapper provides `PointCloudComponent`, which connects to a point cloud outp
 
 ```c++
 class PointActor : public glengine::world::Actor {
+public:
     PointActor(std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>> cloud) {
-        auto component = CreateComponent<pointmapper::PointCloudComponent>();
+        auto component = CreateComponent<PointCloudComponent>();
         component->SetCloudNode(cloud);
     }
     
