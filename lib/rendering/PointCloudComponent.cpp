@@ -17,7 +17,7 @@ PointCloudComponent::PointCloudComponent() {
 
     cloudRenderer = GetEngine()->GetRenderer()->GetRenderPipelineByName("cloud")->CreateInstance();
 
-    mesh = GetEngine()->GetResourceManager()->GetResource<glengine::world::mesh::StaticMesh>("/Users/kyle/CLionProjects/GLEngine/test3d/assets/cube-tex.obj")->mesh;
+    mesh = GetEngine()->GetResourceManager()->GetResource<glengine::world::mesh::StaticMesh>("/builtin/models/plane.obj")->mesh;
 
     WGPUBindGroupEntry regEntry = WGPU_BIND_GROUP_ENTRY_INIT;
     regEntry.binding = 1;
