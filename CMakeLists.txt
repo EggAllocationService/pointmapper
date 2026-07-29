@@ -90,7 +90,7 @@ if (VISUALIZATION)
     include(FetchContent)
     FetchContent_Declare(glengine-src
         GIT_REPOSITORY https://github.com/EggAllocationService/GLEngine.git
-        GIT_TAG c0e8d75
+        GIT_TAG ca449157342f4cd219bd7286a2f726e67c2b40d7
     )
     FetchContent_MakeAvailable(glengine-src)
 
