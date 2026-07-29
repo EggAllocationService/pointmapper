@@ -71,5 +71,5 @@ fn vs(i: Vertex) -> VertexOut {
 
 @fragment
 fn fs(i: VertexOut) -> @location(0) vec4f {
-    return vec4f(vec3f(i.dst / 3.0), 1);
+    return vec4f(vec3f(i.dist / 3.0), 1);
 }
