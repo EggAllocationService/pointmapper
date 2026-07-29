@@ -21,7 +21,8 @@ struct VertexIn {
 
 struct VertexOut {
     @builtin(position) pos: vec4f,
-    @location(0) color: vec4f
+    @location(0) color: vec4f,
+    @location(1) dist: f32
 }
 
 struct ModelData {
@@ -63,11 +64,12 @@ fn vs(i: Vertex) -> VertexOut {
 
     result.pos = uniforms.projectionViewMatrix * m.m * ((billboard * 0.004) + (registration.m * vec4f(pt.pos.xyz, 1)));
     result.color = unpack4x8unorm(bitcast<u32>(pt.pos.w));
+    result.dist = pt.pos.z;
 
     return result;
 }
 
 @fragment
 fn fs(i: VertexOut) -> @location(0) vec4f {
-    return i.color;
+    return vec4f(vec3f(i.dst / 3.0), 1);
 }
