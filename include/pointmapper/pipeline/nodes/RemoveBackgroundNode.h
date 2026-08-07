@@ -28,6 +28,7 @@ namespace pointmapper::pipeline {
         WGPUBuffer dummyOutInfo = nullptr;
         WGPUBuffer maxDepth = nullptr;
         WGPUBuffer prevDepth = nullptr;
+        WGPUBuffer unresolvedDepth = nullptr;
 
         std::shared_ptr<ComputePipeline> maskPipeline;
     };

@@ -45,7 +45,6 @@ var<storage, read_write> outInfo: OutputInfo;
 @group(1)
 @binding(0)
 var<storage, read_write> depth: array<f32>;
-
 @group(1)
 @binding(1)
 var<storage, read_write> output: array<Point>;
@@ -56,10 +55,13 @@ var<storage, read_write> max_depth: array<f32>;
 @group(2)
 @binding(1)
 var<storage, read_write> prev_depth: array<f32>;
+@group(2)
+@binding(2)
+var<storage, read_write> timeSinceLastValid: array<u32>;
 
 @compute @workgroup_size(8, 8)
 fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
-    if (pos.x > info.depth_width || pos.y > info.depth_height) {
+    if (pos.x >= info.depth_width || pos.y >= info.depth_height) {
         return;
     }
 
@@ -69,18 +71,24 @@ fn mask(@builtin(global_invocation_id) pos: vec3<u32>) {
         d = 0;
     }
 
+    if (timeSinceLastValid[idx] > 60) {
+        max_depth[idx] = 100000;
+    }
     if (d == 0) {
+        timeSinceLastValid[idx] = min(timeSinceLastValid[idx] + 1, 1000);
         prev_depth[idx] = 0;
         depth[idx] = 0;
-    } else if (prev_depth[idx] != 0) {
-        var filtered = (prev_depth[idx] * 0.7) + (d * 0.3);
-        depth[idx] = filtered;
-        d = filtered;
+    } else {
+        timeSinceLastValid[idx] = 0;
+        /*if (prev_depth[idx] != 0) {
+            var filtered = (prev_depth[idx] * 0.7) + (d * 0.3);
+            depth[idx] = filtered;
+            d = filtered;
+        }*/
     }
-
     prev_depth[idx] = d;
-    let max = max(max_depth[idx], d);
 
+    let max = max(max_depth[idx], d);
     let delta = abs(max - d);
 
     if delta < info.depth_tolerance {

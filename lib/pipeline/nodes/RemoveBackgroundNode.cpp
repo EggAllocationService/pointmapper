@@ -30,7 +30,7 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
         group0Entries[1].visibility = WGPUShaderStage_Compute;
         group0Entries[1].binding = 1;
 
-        std::vector<WGPUBindGroupLayoutEntry> group1Entries(2);
+        std::vector<WGPUBindGroupLayoutEntry> group1Entries(3);
         group1Entries[0] = WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT;
         group1Entries[0].binding = 0;
         group1Entries[0].buffer.type = WGPUBufferBindingType_Storage;
@@ -41,6 +41,11 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
         group1Entries[1].buffer.type = WGPUBufferBindingType_Storage;
         group1Entries[1].visibility = WGPUShaderStage_Compute;
 
+        group1Entries[2] = WGPU_BIND_GROUP_LAYOUT_ENTRY_INIT;
+        group1Entries[2].binding = 2;
+        group1Entries[2].buffer.type = WGPUBufferBindingType_Storage;
+        group1Entries[2].visibility = WGPUShaderStage_Compute;
+
         std::vector<WGPUBindGroupLayoutDescriptor> layouts(3);
         layouts[0] = WGPU_BIND_GROUP_LAYOUT_DESCRIPTOR_INIT;
         layouts[0].entryCount = 2;
@@ -49,6 +54,7 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
         layouts[1].entryCount = 2;
         layouts[1].entries = group1Entries.data();
         layouts[2] = layouts[1];
+        layouts[2].entryCount = 3;
 
         auto kernels = PIPELINE->CompileShaderModule(embeddedKernels);
         baseMask = PIPELINE->BuildComputePipeline("mask", kernels, "mask", std::span(layouts), 0);
@@ -62,6 +68,7 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
     dummyOutInfo = PIPELINE->CreateBuffer(16, WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst);
     maxDepth = PIPELINE->CreateBuffer(depthSize, WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst);
     prevDepth = PIPELINE->CreateBuffer(depthSize, WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst);
+    unresolvedDepth = PIPELINE->CreateBuffer(depthSize, WGPUBufferUsage_Storage);
 
     uint32_t zeros[4] = {0, 0, 0, 0};
     wgpuQueueWriteBuffer(PIPELINE->GetQueue(), dummyOutInfo, 0, zeros, sizeof(zeros));
@@ -91,8 +98,12 @@ void pointmapper::pipeline::RemoveBackgroundNode::Hydrate() {
     WGPUBindGroupEntry prevDepthEntry = WGPU_BIND_GROUP_ENTRY_INIT;
     prevDepthEntry.buffer = prevDepth;
     prevDepthEntry.binding = 1;
+    WGPUBindGroupEntry unresolvedDepthEntry = WGPU_BIND_GROUP_ENTRY_INIT;
+    unresolvedDepthEntry.buffer = unresolvedDepth;
+    unresolvedDepthEntry.binding = 2;
     maskPipeline->SetBinding(2, maxDepthEntry);
     maskPipeline->SetBinding(2, prevDepthEntry);
+    maskPipeline->SetBinding(2, unresolvedDepthEntry);
     maskPipeline->CommitBindings();
 
     auto& out = *(*depthMap);
