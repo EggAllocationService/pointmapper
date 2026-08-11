@@ -25,7 +25,6 @@ add_library(pointmapper STATIC
         include/pointmapper/pipeline/GPUTexture.h
         lib/pipeline/EmbeddedKernels.cpp
         include/pointmapper/pipeline/EmbeddedKernels.h
-        lib/registration/registration.cpp
         include/pointmapper/registration/registration.h
         include/pointmapper/pipeline/nodes/Node.h
         include/pointmapper/pipeline/types/CommonTypes.h
@@ -123,12 +122,11 @@ set(OpenMP_omp_LIBRARY omp)
 find_package(PkgConfig REQUIRED)
 target_include_directories(pointmapper PUBLIC "/opt/homebrew/opt/libomp/include" "/usr/local/opt/libomp/include")
 target_link_directories(pointmapper PUBLIC "/opt/homebrew/opt/libomp/lib" "/usr/local/opt/libomp/lib")
-find_package(PCL REQUIRED)
 find_package(ZFP REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${PCL_LIBRARIES} ${ZFP_LIBRARIES})
-target_include_directories(pointmapper PUBLIC ${PCL_INCLUDE_DIRS} ${ZFP_LIBRARIES})
+target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${ZFP_LIBRARIES})
+target_include_directories(pointmapper PUBLIC ${ZFP_LIBRARIES})
 target_link_libraries(testpoints PUBLIC pointmapper)
 
 if(VISUALIZATION)
