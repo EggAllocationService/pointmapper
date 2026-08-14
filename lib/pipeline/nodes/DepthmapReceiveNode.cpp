@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-07-16.
 //
 
-#include "DepthmapReceiveNode.h"
+#include "pointmapper/pipeline/nodes/DepthmapReceiveNode.h"
 
 #include "pointmapper/pipeline/PointmapperPipeline.h"
 

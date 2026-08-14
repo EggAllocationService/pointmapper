@@ -2,7 +2,7 @@
 // Created by Kyle Smith on 2026-07-09.
 //
 
-#include "DepthmapSendNode.h"
+#include "pointmapper/pipeline/nodes/DepthmapSendNode.h"
 
 #include "pointmapper/pipeline/nodes/GpuToCpuCopyNode.h"
 #include "pointmapper/pipeline/PointmapperPipeline.h"
