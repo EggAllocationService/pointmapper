@@ -6,9 +6,9 @@
 #define POINTMAPPER_DEPTHMAPSENDNODE_H
 #include <zfp.h>
 
-#include "Node.h"
-#include "../types/CommonTypes.h"
-#include "../enet.h"
+#include "pointmapper/pipeline/nodes/Node.h"
+#include "pointmapper/pipeline/types/CommonTypes.h"
+#include "pointmapper/pipeline/enet.h"
 
 
 

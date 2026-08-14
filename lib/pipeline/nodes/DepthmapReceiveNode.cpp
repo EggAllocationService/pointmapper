@@ -4,7 +4,7 @@
 
 #include "DepthmapReceiveNode.h"
 
-#include "../PointmapperPipeline.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
 
 #include <cassert>
 #include <cstring>

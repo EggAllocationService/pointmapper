@@ -9,10 +9,10 @@
 #include <vector>
 #include <zfp.h>
 
-#include "../enet.h"
-#include "Node.h"
-#include "../types/CommonTypes.h"
-#include "../net.h"
+#include "pointmapper/pipeline/enet.h"
+#include "pointmapper/pipeline/nodes/Node.h"
+#include "pointmapper/pipeline/types/CommonTypes.h"
+#include "pointmapper/pipeline/net.h"
 
 class DepthmapReceiveNode : public pointmapper::pipeline::Node {
 public:

@@ -4,9 +4,9 @@
 
 #include "DepthmapSendNode.h"
 
-#include "GpuToCpuCopyNode.h"
-#include "../PointmapperPipeline.h"
-#include "../net.h"
+#include "pointmapper/pipeline/nodes/GpuToCpuCopyNode.h"
+#include "pointmapper/pipeline/PointmapperPipeline.h"
+#include "pointmapper/pipeline/net.h"
 
 DepthmapSendNode::DepthmapSendNode(int port) {
     depth = CreateInput<pointmapper::pipeline::GPUDepthMap>();
