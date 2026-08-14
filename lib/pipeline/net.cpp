@@ -10,3 +10,12 @@ uint32_t pointmapper::pipeline::net::reverse<uint32_t>(uint32_t val) {
            ((val & 0x0000FF00) <<  8) |
            ((val & 0x000000FF) << 24);
 }
+
+template<>
+CameraParams pointmapper::pipeline::net::reverse<CameraParams>(CameraParams val) {
+    val.width = reverse(val.width);
+    val.height = reverse(val.height);
+    val.colorWidth = reverse(val.colorWidth);
+    val.colorHeight = reverse(val.colorHeight);
+    return val;
+}

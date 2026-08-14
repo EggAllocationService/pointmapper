@@ -61,7 +61,7 @@ fn vs(i: Vertex) -> VertexOut {
 
     let billboard = vec4(rotationMatrix * i.position.xzy, 1);
 
-    result.pos = uniforms.projectionViewMatrix * m.m * ((billboard * 0.004) + (registration.m * vec4f(pt.pos.xyz, 1)));
+    result.pos = uniforms.projectionViewMatrix * m.m * ((billboard * 0.002) + (registration.m * vec4f(pt.pos.xyz, 1)));
     result.color = unpack4x8unorm(bitcast<u32>(pt.pos.w));
 
     return result;

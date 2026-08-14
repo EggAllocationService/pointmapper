@@ -26,7 +26,7 @@ namespace pointmapper::pipeline {
         std::shared_ptr<Output<GPUDepthMap>> depth;
         std::shared_ptr<Output<CameraParams>> params;
         std::shared_ptr<Output<GPUColorTexture>> color;
-        std::shared_ptr<Output<GPUFrameData>> frameData;
+        std::shared_ptr<Output<FrameData>> frameData;
 
     private:
         DepthDevice* device;

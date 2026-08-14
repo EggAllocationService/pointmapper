@@ -5,13 +5,10 @@
 
 #include "Engine.h"
 #include "TestActor.h"
-#include "pointmapper/kinect2/Kinect2Device.h"
 #include "pointmapper/pipeline/PointmapperPipeline.h"
 #include "pointmapper/pipeline/nodes/CpuToGpuCopyNode.h"
 #include "pointmapper/pipeline/nodes/DepthCameraNode.h"
 #include "pointmapper/pipeline/nodes/NetworkReceiveNode.h"
-#include "pointmapper/pipeline/nodes/RemoveBackgroundNode.h"
-#include "pointmapper/pipeline/nodes/RemoveBlobsNode.h"
 #include "pointmapper/rendering/pipelines.h"
 
 int main() {

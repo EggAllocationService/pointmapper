@@ -68,6 +68,7 @@ void pointmapper::pipeline::NetworkSendNode::Process(PipelineBundle &) {
             enet_peer_disconnect(event.peer, 0);
             break;
         case ENET_EVENT_TYPE_NONE:
+        case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
             // don't do anything
             break;
     }

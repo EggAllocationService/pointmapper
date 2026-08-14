@@ -124,7 +124,7 @@ void pointmapper::pipeline::PointmapperPipeline::Build() {
         // check that all inputs are connected & ready
         bool ok = true;
         for (const auto& input : node->GetInputs()) {
-            if (!input->IsConnected()) {
+            if (!input->IsConnected() && !input->IsOptional()) {
                 ok = false;
                 break;
             }

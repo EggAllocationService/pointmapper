@@ -20,8 +20,8 @@ namespace pointmapper::pipeline {
 
         depth_map = CreateInput<GPUDepthMap>();
         camera_params = CreateInput<CameraParams>();
-        color = CreateInput<GPUColorTexture>();
-        frameData = CreateInput<GPUFrameData>();
+        color = CreateInput<GPUColorTexture>(true);
+        frameData = CreateInput<FrameData>();
     }
 
     void CreatePointCloudNode::Hydrate() {
@@ -108,8 +108,13 @@ namespace pointmapper::pipeline {
         samplerEntry.sampler = sampler;
 
         WGPUBindGroupEntry colorEntry = WGPU_BIND_GROUP_ENTRY_INIT;
-        colorEntry.textureView = *(*color)->texture;
         colorEntry.binding = 1;
+        if (color->IsConnected()) {
+            colorEntry.textureView = *(*color)->texture;
+        } else {
+            auto tex = PIPELINE->CreateTexture("dummy texture", WGPUTextureUsage_TextureBinding, WGPUTextureFormat_RGBA8Unorm, 1, 1);
+            colorEntry.textureView = wgpuTextureCreateView(*tex, nullptr);
+        }
 
         cloudPipeline->SetBinding(0, infoEntry);
         cloudPipeline->SetBinding(0, countEntry);
@@ -151,8 +156,8 @@ namespace pointmapper::pipeline {
         pc.axisScale.w = fd->axisScale[3];
         pc.depthScale = fd->depthUnits;
 
-        int groupsX = std::max(1, p.width / 8);
-        int groupsY = std::max(1, p.height / 8);
+        int groupsX = std::max(1, static_cast<int>(p.width) / 8);
+        int groupsY = std::max(1, static_cast<int>(p.height) / 8);
 
         cloudPipeline->DispatchWorkgroups(bundle.encoder, groupsX, groupsY, 1, &pc);
     }

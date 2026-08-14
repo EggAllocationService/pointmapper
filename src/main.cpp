@@ -39,11 +39,10 @@ int main() {
     cloud->frameData->Connect(cam->frameData);
     cloud->depth_map->Connect(cam->depth);
 
-    auto cpuCopy = pipeline->CreateNode<pointmapper::pipeline::GpuToCpuCopyNode>();
-    cpuCopy->cloud->Connect(cloud->cloud);
-
-    auto output = pipeline->CreateNode<pointmapper::pipeline::NetworkSendNode>();
-    output->cloud->Connect(cpuCopy->cpuCloud);
+    auto output = pipeline->CreateNode<DepthmapSendNode>(6767);
+    output->depth->Connect(blobs->depthMap);
+    output->cameraParams->Connect(cam->params);
+    output->frameData->Connect(cam->frameData);
 
     pipeline->Build();
 

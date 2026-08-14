@@ -32,8 +32,8 @@ CameraParams RealsenseDevice::GetCameraParameters() {
         .fy = intrinsics.fy,
         .cx = intrinsics.ppx,
         .cy = intrinsics.ppy,
-        .width = intrinsics.width,
-        .height = intrinsics.height,
+        .width = static_cast<uint32_t>(intrinsics.width),
+        .height = static_cast<uint32_t>(intrinsics.height),
         .colorWidth = 640,
         .colorHeight = 480,
         .colorType = RGBX

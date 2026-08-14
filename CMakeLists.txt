@@ -46,7 +46,11 @@ add_library(pointmapper STATIC
         include/pointmapper/pipeline/nodes/NetworkReceiveNode.h
         lib/pipeline/nodes/CpuToGpuCopyNode.cpp
         include/pointmapper/pipeline/nodes/CpuToGpuCopyNode.h
-        lib/pipeline/enet.cpp)
+        lib/pipeline/enet.cpp
+        lib/pipeline/nodes/DepthmapSendNode.cpp
+        lib/pipeline/nodes/DepthmapSendNode.h
+        lib/pipeline/nodes/DepthmapReceiveNode.cpp
+        lib/pipeline/nodes/DepthmapReceiveNode.h)
 
 target_include_directories(pointmapper PUBLIC include)
 

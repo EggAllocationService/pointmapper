@@ -87,8 +87,8 @@ namespace pointmapper::pipeline {
             return result;
         }
 
-        template<typename T> std::shared_ptr<Input<T>> CreateInput() {
-            auto result = std::make_shared<Input<T>>(this);
+        template<typename T> std::shared_ptr<Input<T>> CreateInput(bool optional = false) {
+            auto result = std::make_shared<Input<T>>(this, optional);
             inputs.push_back(result);
             return result;
         }
@@ -101,8 +101,9 @@ namespace pointmapper::pipeline {
 
     class InputBase {
     public:
-        InputBase(Node* a) {
+        InputBase(Node* a, bool b) {
             node = a;
+            optional = b;
         }
         virtual ~InputBase() = default;
         virtual std::shared_ptr<OutputBase> GetSource() = 0;
@@ -120,12 +121,17 @@ namespace pointmapper::pipeline {
             newData = false;
         }
 
+        [[nodiscard]] bool IsOptional() const {
+            return optional;
+        }
+
         [[nodiscard]] bool HasNewData() const {
             return newData;
         }
     private:
         Node* node;
         bool newData = false;
+        bool optional;
     };
 
     class OutputBase {
@@ -144,7 +150,7 @@ namespace pointmapper::pipeline {
     template<typename T>
     class Input : public InputBase {
     public:
-        Input(Node* a) : InputBase(a) {}
+        Input(Node* a, bool b) : InputBase(a, b) {}
 
         std::shared_ptr<OutputBase> GetSource() override {
             return source;
@@ -156,6 +162,10 @@ namespace pointmapper::pipeline {
 
         T* operator ->() {
             return &source->value;
+        }
+
+        T& operator*() {
+            return source->value;
         }
 
         void Connect(std::shared_ptr<Output<T>> src) {
