@@ -23,7 +23,7 @@ void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {
         .nextInChain = nullptr,
         .type = WGPUBufferBindingType_Uniform,
         .hasDynamicOffset = false,
-        .minBindingSize = sizeof(mat4)
+        .minBindingSize = sizeof(RenderParams)
     };
     renderEntries[1].visibility = WGPUShaderStage_Fragment;
     renderEntries[1].binding = 1;
