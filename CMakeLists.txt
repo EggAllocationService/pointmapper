@@ -113,9 +113,6 @@ else()
     target_link_libraries(pointmapper PUBLIC webgpu)
 endif()
 
-add_executable(testpoints src/main.cpp)
-
-
 set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp")
 set(OpenMP_C_LIB_NAMES "omp")
 set(OpenMP_omp_LIBRARY omp)
@@ -131,14 +128,19 @@ find_package(Eigen3 REQUIRED)
 
 target_link_libraries(pointmapper PUBLIC Eigen3::Eigen ${ZFP_LIBRARIES})
 target_include_directories(pointmapper PUBLIC ${ZFP_LIBRARIES})
-target_link_libraries(testpoints PUBLIC pointmapper)
 
-if(VISUALIZATION)
-    add_executable(testvis
-            vis/TestActor.cpp
-            vis/TestActor.h
-            vis/main.cpp
-    )
-    target_link_libraries(testvis PUBLIC pointmapper)
+if (${PROJECT_IS_TOP_LEVEL})
+    add_executable(testpoints src/main.cpp)
+    target_link_libraries(testpoints PUBLIC pointmapper)
+    if(VISUALIZATION)
+        add_executable(testvis
+                vis/TestActor.cpp
+                vis/TestActor.h
+                vis/main.cpp
+        )
+        target_link_libraries(testvis PUBLIC pointmapper)
+    endif()
 endif()
+
+
 

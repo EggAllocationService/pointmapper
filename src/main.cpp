@@ -11,7 +11,7 @@
 #include "pointmapper/kinect2/Kinect2Device.h"
 #include "pointmapper/pipeline/nodes/CreatePointCloudNode.h"
 #include "pointmapper/pipeline/nodes/DepthCameraNode.h"
-#include "pointmapper/pipeline/nodes/GpuToCpuCopyNode.h"
+#include "pointmapper/pipeline/nodes/DepthmapSendNode.h"
 
 #include "pointmapper/pipeline/nodes/NetworkSendNode.h"
 
@@ -40,7 +40,7 @@ int main() {
     cloud->depth_map->Connect(cam->depth);
 
     auto output = pipeline->CreateNode<DepthmapSendNode>(6767);
-    output->depth->Connect(blobs->depthMap);
+    output->depth->Connect(cam->depth);
     output->cameraParams->Connect(cam->params);
     output->frameData->Connect(cam->frameData);
 
