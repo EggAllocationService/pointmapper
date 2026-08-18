@@ -76,7 +76,7 @@ fn fs(i: VertexOut) -> @location(0) vec4f {
         return i.color;
     } else {
         let scale = saturate(i.dist / renderParams.maxDepth);
-        return vec4f(mix(renderParams.tint.xyz * scale, i.color.xyz, renderParams.tint.w), 1);
+        return vec4f(mix(i.color.xyz, renderParams.tint.xyz * scale, renderParams.tint.w), 1);
     }
 
 }
