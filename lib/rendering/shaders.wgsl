@@ -29,8 +29,9 @@ struct ModelData {
     m: mat4x4<f32>
 }
 
-struct RegistrationData {
-    m: mat4x4<f32>
+struct RenderParams {
+    tint: vec4f,
+    maxDepth: f32
 }
 
 @group(0)
@@ -43,7 +44,7 @@ var<storage, read> points: array<Point>;
 
 @group(1)
 @binding(1)
-var<uniform> registration: RegistrationData;
+var<uniform> renderParams: RenderParams;
 
 var<immediate> m: ModelData;
 
@@ -62,7 +63,7 @@ fn vs(i: Vertex) -> VertexOut {
 
     let billboard = vec4(rotationMatrix * i.position.xzy, 1);
 
-    result.pos = uniforms.projectionViewMatrix * m.m * ((billboard * 0.002) + (registration.m * vec4f(pt.pos.xyz, 1)));
+    result.pos = uniforms.projectionViewMatrix * m.m * ((billboard * 0.002) + vec4f(pt.pos.xyz, 1));
     result.color = unpack4x8unorm(bitcast<u32>(pt.pos.w));
     result.dist = pt.pos.z;
 
@@ -71,5 +72,11 @@ fn vs(i: Vertex) -> VertexOut {
 
 @fragment
 fn fs(i: VertexOut) -> @location(0) vec4f {
-    return i.color;
+    if (renderParams.tint.w == 0) {
+        return i.color;
+    } else {
+        let scale = saturate(i.dist / renderParams.maxDepth);
+        return vec4f(mix(renderParams.tint.xyz * scale, i.color.xyz, renderParams.tint.w), 1);
+    }
+
 }

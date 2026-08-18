@@ -12,8 +12,11 @@ public:
     TestActor();
     void SetNode(std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>> node);
     void Update(double deltaTime) override;
-    void SetRegistration(mat4 r) {
-        pc_->SetRegistration(r);
+    void SetTint(float4 tint) {
+        pc_->SetTint(tint);
+    }
+    void SetTintDepth(float depth) {
+        pc_->SetMaxDepth(depth);
     }
 private:
     std::shared_ptr<glengine::world::font::SlugTextComponent> text_;

@@ -16,8 +16,9 @@ struct IndirectRenderParams {
     int firstInstance;
 };
 
-struct RegistrationInfo {
-    mat4 transform;
+struct alignas(16) RenderParams {
+    float4 tint;
+    float tintDepth = 0;
 };
 
 class PointCloudComponent : public glengine::world::ActorSceneComponent {
@@ -30,13 +31,14 @@ public:
     void SetDevice(DepthDevice* dev);
     void SetCloudNode(const std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>>& node);
 
-    void SetRegistration(mat4 transform);
+    void SetTint(float4 tint);
+    void SetMaxDepth(float maxDepth);
 
 private:
     std::shared_ptr<glengine::pipeline::wgpu::RenderPipeline> cloudRenderer;
 
     glengine::pipeline::wgpu::GPUPointer<IndirectRenderParams> indirectParams;
-    glengine::pipeline::wgpu::GPUPointer<RegistrationInfo> registrationInfo;
+    glengine::pipeline::wgpu::GPUPointer<RenderParams> renderParams;
 
     std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>> cloudNode;
 

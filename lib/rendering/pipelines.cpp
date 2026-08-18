@@ -25,7 +25,7 @@ void addPointmapperPipelines(glengine::pipeline::wgpu::WGPURenderer* renderer) {
         .hasDynamicOffset = false,
         .minBindingSize = sizeof(mat4)
     };
-    renderEntries[1].visibility = WGPUShaderStage_Vertex;
+    renderEntries[1].visibility = WGPUShaderStage_Fragment;
     renderEntries[1].binding = 1;
 
     WGPUBindGroupLayoutDescriptor renderLayout = {

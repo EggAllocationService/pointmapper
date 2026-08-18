@@ -10,19 +10,21 @@
 PointCloudComponent::PointCloudComponent() {
     depthDevice = nullptr;
     indirectParams = GetEngine()->GetRenderer()->AllocateObject<IndirectRenderParams>(WGPUBufferUsage_Indirect);
-    registrationInfo = GetEngine()->GetRenderer()->AllocateObject<RegistrationInfo>(WGPUBufferUsage_Uniform);
-
-    registrationInfo->transform = mat4::identity();
-    registrationInfo.Commit();
+    renderParams = GetEngine()->GetRenderer()->AllocateObject<RenderParams>(WGPUBufferUsage_Uniform);
+    renderParams->tint = {0,0,0,0};
 
     cloudRenderer = GetEngine()->GetRenderer()->GetRenderPipelineByName("cloud")->CreateInstance();
 
     mesh = GetEngine()->GetResourceManager()->GetResource<glengine::world::mesh::StaticMesh>("/builtin/models/plane.obj")->mesh;
 
-    WGPUBindGroupEntry regEntry = WGPU_BIND_GROUP_ENTRY_INIT;
-    regEntry.binding = 1;
-    regEntry.buffer = registrationInfo;
-    cloudRenderer->SetBinding(1, regEntry);
+    cloudRenderer->SetBinding(1, 1, renderParams);
+
+    indirectParams->numIndices = mesh->GetIndexCount();
+    indirectParams->numInstances = 0;
+    indirectParams->firstVertex = 0;
+    indirectParams->baseVertex = 0;
+    indirectParams->firstInstance = 0;
+    indirectParams.Commit();
 }
 
 void PointCloudComponent::Update(double deltaTime) {
@@ -32,12 +34,7 @@ void PointCloudComponent::Update(double deltaTime) {
     auto device = renderer->GetDevice();
     auto queue = wgpuDeviceGetQueue(device);
 
-    indirectParams->numIndices = mesh->GetIndexCount();
-    indirectParams->numInstances = 0;
-    indirectParams->firstVertex = 0;
-    indirectParams->baseVertex = 0;
-    indirectParams->firstInstance = 0;
-    indirectParams.Commit();
+    renderParams.Commit();
 
     auto encoder = wgpuDeviceCreateCommandEncoder(device, nullptr);
     wgpuCommandEncoderCopyBufferToBuffer(
@@ -67,14 +64,14 @@ void PointCloudComponent::SetDevice(DepthDevice *dev) {
 void PointCloudComponent::SetCloudNode(const std::shared_ptr<pointmapper::pipeline::Output<pointmapper::pipeline::GPUPointCloud>>& node) {
     cloudNode = node;
 
-    WGPUBindGroupEntry pointsEntry = WGPU_BIND_GROUP_ENTRY_INIT;
-    pointsEntry.buffer = (*cloudNode)->points;
-
-    cloudRenderer->SetBinding(1, pointsEntry);
+    cloudRenderer->SetBinding(1, 0, (*cloudNode)->points);
     cloudRenderer->CommitBindings();
 }
 
-void PointCloudComponent::SetRegistration(mat4 transform) {
-    registrationInfo->transform = transform;
-    registrationInfo.Commit();
+void PointCloudComponent::SetTint(float4 tint) {
+    renderParams->tint = tint;
+}
+
+void PointCloudComponent::SetMaxDepth(float maxDepth) {
+    renderParams->tintDepth = maxDepth;
 }
