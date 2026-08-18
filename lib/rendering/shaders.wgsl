@@ -61,9 +61,11 @@ fn vs(i: Vertex) -> VertexOut {
         uniforms.viewMatrix[2].xyz
     ));
 
+    let origin = m.m * vec4f(pt.pos.xyz, 1);
+
     let billboard = vec4(rotationMatrix * i.position.xzy, 1);
 
-    result.pos = uniforms.projectionViewMatrix * m.m * ((billboard * 0.002) + vec4f(pt.pos.xyz, 1));
+    result.pos = uniforms.projectionViewMatrix * (billboard * 0.005 + origin);
     result.color = unpack4x8unorm(bitcast<u32>(pt.pos.w));
     result.dist = pt.pos.z;
 
@@ -78,5 +80,4 @@ fn fs(i: VertexOut) -> @location(0) vec4f {
         let scale = saturate(i.dist / renderParams.maxDepth);
         return vec4f(mix(i.color.xyz, renderParams.tint.xyz * scale, renderParams.tint.w), 1);
     }
-
 }
